@@ -1,0 +1,8 @@
+useDynLib(gaussianProcess)
+exportPattern("^[[:alpha:]]+")
+importFrom(Rcpp, evalCpp)
+importFrom(randomForest, randomForest, getTree)
+importFrom(mnormt, rmnorm)
+importFrom(optimx, optimx)
+importFrom(hash, hash)
+importFrom(numDeriv, grad)

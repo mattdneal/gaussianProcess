@@ -1,0 +1,11 @@
+Package: gaussianProcess
+Type: Package
+Title: Gaussian Process Fitting and Prediction
+Version: 0.1
+Date: 2016-01-13
+Author: Matthew Neal
+Maintainer: Matthew Neal <mattdneal@gmail.com>
+Description: This package provides tools for Gaussian Process regression using a variety of kernels, and provides a framework for incorporating user-defined kernels.
+License: MIT
+Imports: Rcpp (>= 0.12.3), optimx, mnormt, hash, numDeriv
+LinkingTo: Rcpp, RcppArmadillo
