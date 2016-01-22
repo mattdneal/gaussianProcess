@@ -196,6 +196,8 @@ get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
 
   inst.cov.mats <- list()
 
+  hyper.param.cache.check(model.tree)
+
   for (inst.id in rownames(model.tree$kernel.instances)) {
     if (return.grad) {
       # Set up a full array for all of the hyperparameters in the model
@@ -219,14 +221,39 @@ get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
 
       # Only update the hyperparameters which are used for this kernel.
       if (length(kernel.hyper.param.indices) > 0) {
-        cov.mat.grad.array[,,kernel.hyper.param.indices + 1] <-
-          get.covariance.matrix.grad.kernel(x, kernel, 0, kernel.hyper.params, kernel.additional.params)[, , -1]
+
+        # First check the cache
+        if (inst.id %in% names(model.tree$cache[[icmg.cache.name]])) {
+          inst.grad.array <- model.tree$cache[[icmg.cache.name]][[inst.id]]
+        } else {
+          inst.grad.array <-
+            get.covariance.matrix.grad.kernel(x,
+                                              kernel,
+                                              0,
+                                              kernel.hyper.params,
+                                              kernel.additional.params)[, , -1]
+
+          model.tree$cache[[icmg.cache.name]][[inst.id]] <- inst.grad.array
+        }
+        cov.mat.grad.array[,,kernel.hyper.param.indices + 1] <- inst.grad.array
       }
 
       inst.cov.mats[[inst.id]] <- cov.mat.grad.array
 
     } else {
-      inst.cov.mats[[inst.id]] <- get.covariance.matrix.kernel(x, kernel, 0, kernel.hyper.params, kernel.additional.params)
+      # Returning covariance matrix
+      if (inst.id %in% names(model.tree$cache[[icm.cache.name]])) {
+        inst.cov.mats[[inst.id]] <- model.tree$cache[[icm.cache.name]][[inst.id]]
+      } else {
+        inst.cov.mats[[inst.id]] <-
+          get.covariance.matrix.kernel(x,
+                                       kernel,
+                                       0,
+                                       kernel.hyper.params,
+                                       kernel.additional.params)
+
+        model.tree$cache[[icm.cache.name]][[inst.id]] <- inst.cov.mats[[inst.id]]
+      }
     }
   }
 

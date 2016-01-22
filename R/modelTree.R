@@ -1,9 +1,17 @@
-#' Clone an environment
+
+ahp.cache.name <- "all.hyper.params.cache"
+icm.cache.name <- "inst.cov.mats.cache"
+icmg.cache.name <- "inst.cov.mats.grad.cache"
+
+
+#' Clone an Environment
 #'
 #' @param orig.env the environment to clone
 #'
 #' @return a new environment whose contents match \code{orig.env}
 #' @export
+#'
+#' @seealso \code{\link{clone.ModelTree}}
 #'
 #' @examples
 #' mt <- create.model.tree.builtin()
@@ -15,6 +23,26 @@ clone.env <- function(orig.env) {
   }
   attributes(copy.env) <- attributes(orig.env)
   return(copy.env)
+}
+
+#' Clone a Model Tree
+#'
+#' @param orig.model.tree the ModelTree to clone
+#' @param invalidate.cache boolean indicating whether the cache should be cleared.
+#' If you're not sure whether you need to clear the cache or not, you probably do.
+#'
+#' @return a new Model Tree whose contents match \code{orig.model.tree}
+#' @export
+#'
+#' @examples
+#' mt <- create.model.tree.builtin()
+#' mt2 <- clone.ModelTree(mt)
+clone.ModelTree <- function(orig.model.tree, invalidate.cache=TRUE) {
+  model.tree <- clone.env(orig.model.tree)
+  if (invalidate.cache) {
+    invalidate.cache(model.tree)
+  }
+  return(model.tree)
 }
 
 generate.id <- function(existing.ids, prefix=NULL) {
@@ -103,7 +131,40 @@ create.model.tree <- function() {
   # This holds the hyper parameter names for each kernel. Indexed by kernelClassName
   model.tree$kernel.class.hyper.param.names <- list()
 
+  # Calling invalidate.cache will set up an empty cache for us
+  invalidate.cache(model.tree)
+
   return(model.tree)
+}
+
+# Because model trees are environments we can update the cache and it persists
+# outside of the function.
+invalidate.cache <- function(model.tree) {
+  model.tree$cache <- list()
+  model.tree$cache[[icm.cache.name]] <- list()
+  model.tree$cache[[icmg.cache.name]] <- list()
+  return(NULL)
+}
+
+# Because model trees are environments we can update the cache and it persists
+# outside of the function.
+hyper.param.cache.check <- function(model.tree) {
+  if (ahp.cache.name %in% names(model.tree$cache)) {
+    ahp.cache <- model.tree$cache[[ahp.cache.name]]
+    ahp <- model.tree$all.hyper.params
+
+    for (kinst.ID in model.tree$kernel.instances$kernelInstanceID) {
+      hp.indices <- model.tree$kernel.inst.hyper.param.indices[[kinst.ID]]
+
+      if (any(ahp[hp.indices] != ahp.cache[hp.indices])) {
+        model.tree$cache[[icm.cache.name]][[kinst.ID]] <- NULL
+        model.tree$cache[[icmg.cache.name]][[kinst.ID]] <- NULL
+      }
+    }
+  }
+
+  model.tree$cache[[ahp.cache.name]] <- model.tree$all.hyper.params
+  return(NULL)
 }
 
 find.root.node <- function(model.tree) {
@@ -216,9 +277,9 @@ summary.ModelTree <- function(model.tree) {
     if (is.character(model.tree$kernel.class.functions[[kclass]])) {
       cat(paste('  - Built-in kernel: ', model.tree$kernel.class.functions[[kclass]], '\n', sep=""))
     }
-    if (length(model.tree$kernel.class.additional.params[[kclass]] > 0)) {
+    if (length(model.tree$kernel.class.additional.params[[kclass]]) > 0) {
       cat(paste('  - Additional Parameters:\n', sep=""))
-      for (addparam in names (model.tree$kernel.class.additional.params[[kclass]])) {
+      for (addparam in names(model.tree$kernel.class.additional.params[[kclass]])) {
         cat(paste('    - ', addparam, '\n', sep=""))
       }
     }
@@ -275,7 +336,7 @@ add.kernel <- function(orig.model.tree,
                        hyper.param.names,
                        kernel.additional.params=list(),
                        kernel.grad=NULL) {
-  model.tree <- clone.env(orig.model.tree)
+  model.tree <- clone.ModelTree(orig.model.tree)
 
   if (kernel.class.name %in% names(model.tree$kernel.class.functions)) {
     stop("Kernel with that name is already included")
@@ -331,7 +392,7 @@ insert.kernel.instance <- function(orig.model.tree,
                                    kernel.class.name,
                                    operation.id,
                                    hyper.params=NULL) {
-  model.tree <- clone.env(orig.model.tree)
+  model.tree <- clone.ModelTree(orig.model.tree)
 
   if (!kernel.class.name %in% names(model.tree$kernel.class.functions)) {
     stop("Unknown kernel specified.")

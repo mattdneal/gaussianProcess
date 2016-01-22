@@ -2,7 +2,7 @@
 % Please edit documentation in R/modelTree.R
 \name{clone.env}
 \alias{clone.env}
-\title{Clone an environment}
+\title{Clone an Environment}
 \usage{
 clone.env(orig.env)
 }
@@ -13,10 +13,13 @@ clone.env(orig.env)
 a new environment whose contents match \code{orig.env}
 }
 \description{
-Clone an environment
+Clone an Environment
 }
 \examples{
 mt <- create.model.tree.builtin()
 mt2 <- clone.env(mt)
+}
+\seealso{
+\code{\link{clone.ModelTree}}
 }
 

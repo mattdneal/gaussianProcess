@@ -4,7 +4,8 @@
 \alias{plot.GaussianProcess}
 \title{Plot a Gaussian Process}
 \usage{
-\method{plot}{GaussianProcess}(gp.obj, xlim = NULL, num.points = 1000, ...)
+\method{plot}{GaussianProcess}(gp.obj, xlim = NULL, num.points = 1000,
+  col.index = 1, ...)
 }
 \arguments{
 \item{gp.obj}{A gaussianProcess object}
@@ -12,6 +13,8 @@
 \item{xlim}{The limits of the x-axis in the plot. Defaults to the limits of the training data plus one-quarter of the range at either end.}
 
 \item{num.points}{The number of data points to calculate for the plot}
+
+\item{col.index}{if the predictor data is multi-dimensional, specify which dimension to plot. Other dimensions will be set to their mean.}
 
 \item{...}{Additional parameters to pass to \code{plot}}
 }

@@ -47,7 +47,7 @@ create.gaussian.process <- function(x, y, model.tree) {
   gp.obj$training.points <- x
   gp.obj$num.training.points <- num.training.points
   gp.obj$training.point.values <- y
-  gp.obj$model.tree <- clone.env(model.tree)
+  gp.obj$model.tree <- clone.ModelTree(model.tree)
 
   gp.obj$saved.sigma.n <- NULL
 
@@ -382,6 +382,9 @@ create.gaussian.process <- function(x, y, model.tree) {
       if (verbose) print(opt.pars)
       if (verbose) print(paste("Log likelihood for best starting par optimisation:", best.log.likelihood))
     }
+
+    # Before we finish, clear the model.tree cache so we don't accidentally use it for different input data
+    invalidate.cache(model.tree)
     return(optimx.obj)
   }
   environment(gp.obj$fit.hyperparams) <- gp.obj
@@ -416,6 +419,7 @@ create.gaussian.process <- function(x, y, model.tree) {
 #' y1.predicted <- predict(gp, x1)$mean
 #'
 predict.GaussianProcess <- function(gp.obj, data) {
+  invalidate.cache(gp.obj$model.tree)
   if (!is.matrix(data)) {
     data <- matrix(data, nrow=length(data))
   }
@@ -433,6 +437,7 @@ predict.GaussianProcess <- function(gp.obj, data) {
 
   for (i in seq(num.data.points)) {
     v <- gp.obj$cov.mat.L.inv %*% t(K.star[i, , drop=F])
+    invalidate.cache(gp.obj$model.tree)
     pred.out$var[i, 1] <- get.covariance.matrix.model.tree(data[i, , drop=FALSE], gp.obj$model.tree, 0) - t(v) %*% v
   }
 
@@ -446,14 +451,21 @@ predict.GaussianProcess <- function(gp.obj, data) {
 #' @param gp.obj A gaussianProcess object
 #' @param xlim The limits of the x-axis in the plot. Defaults to the limits of the training data plus one-quarter of the range at either end.
 #' @param num.points The number of data points to calculate for the plot
+#' @param col.index if the predictor data is multi-dimensional, specify which dimension to plot. Other dimensions will be set to their mean.
 #' @param ... Additional parameters to pass to \code{plot}
 #'
 #' @return NULL
 #' @export
-plot.GaussianProcess <- function(gp.obj, xlim=NULL, num.points=1000, ...) {
+plot.GaussianProcess <- function(gp.obj, xlim=NULL, num.points=1000, col.index=1, ...) {
+  if (is.null(dim(gp.obj$training.points))) {
+    x.data <- gp.obj$training.points
+  } else {
+    x.data <- gp.obj$training.points[, col.index]
+  }
+
   if (is.null(xlim)) {
-    x.min <- min(gp.obj$training.points)
-    x.max <- max(gp.obj$training.points)
+    x.min <- min(x.data)
+    x.max <- max(x.data)
 
     x.range <- x.max - x.min
 
@@ -465,7 +477,16 @@ plot.GaussianProcess <- function(gp.obj, xlim=NULL, num.points=1000, ...) {
   }
 
   x.values <- seq(from=x.min, to=x.max, length.out=num.points)
-  preds <- predict(gp.obj, x.values)
+  if (is.null(dim(gp.obj$training.points))) {
+    preds <- predict(gp.obj, x.values)
+  } else {
+    input.data <- matrix(colMeans(gp.obj$training.points),
+                         nrow=length(x.values),
+                         ncol=ncol(gp.obj$training.points),
+                         byrow=TRUE)
+    input.data[, col.index] <- x.values
+    preds <- predict(gp.obj, input.data)
+  }
 
   lower.bounds <- preds$mean - 3*sqrt(preds$var)
   upper.bounds <- preds$mean + 3*sqrt(preds$var)
@@ -491,7 +512,7 @@ plot.GaussianProcess <- function(gp.obj, xlim=NULL, num.points=1000, ...) {
     polygon(c(rev(x.values), x.values), c(rev(lower.1sd), upper.1sd), col = 'grey60', border = NA)
     lines(x.values, preds$mean)
 
-    points(gp.obj$training.points, gp.obj$training.point.values)
+    points(x.data, gp.obj$training.point.values)
   }
 
 }
