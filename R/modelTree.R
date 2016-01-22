@@ -1,3 +1,13 @@
+#' Clone an environment
+#'
+#' @param orig.env the environment to clone
+#'
+#' @return a new environment whose contents match \code{orig.env}
+#' @export
+#'
+#' @examples
+#' mt <- create.model.tree.builtin()
+#' mt2 <- clone.env(mt)
 clone.env <- function(orig.env) {
   copy.env <- new.env()
   for(n in ls(orig.env, all.names=TRUE)) {
@@ -38,6 +48,18 @@ prod.grad <- function(a, b, a.grad, b.grad) {
   return(a1 * b.grad + b1 * a.grad)
 }
 
+#' Create an Empty Model Tree
+#'
+#' Creates an instance of a modelTree object with no associated kernels.
+#'
+#' N.B. ModelTree objects are implemented using environments, not lists,
+#' and as such need to be explicitly cloned using \code{\link{clone.env}}.
+#'
+#' @return a modelTree object
+#' @export
+#'
+#' @examples
+#' mt <- create.model.tree()
 create.model.tree <- function() {
   model.tree <- new.env()
   class(model.tree) <- "ModelTree"
@@ -83,7 +105,6 @@ create.model.tree <- function() {
 
   return(model.tree)
 }
-
 
 find.root.node <- function(model.tree) {
   num.nodes <- nrow(model.tree$tree)
@@ -143,15 +164,111 @@ node.to.string <- function(model.tree, node, show.node.ids=FALSE) {
   return(ret)
 }
 
+#' Convert a Model Tree to a String
+#'
+#' Return or print a string representation of the combination of kernels represented by a given model tree
+#'
+#' @param model.tree a modelTree object
+#' @param show.node.ids boolean indicating whether the string should be annotated with the associated node numbers.
+#'
+#' @return a string representing a modelTree object
+#' @export
+#'
+#' @examples
+#' mt <- create.model.tree.builtin()
+#' mt <- insert.kernel.instance(mt, 1, "SE", NULL)
+#' mt <- insert.kernel.instance(mt, 1, "SE", "+")
+#'
+#' as.character(mt) #"( SE.1 + SE.2 )"
+#'
+#' as.character(mt, show.node.ids=TRUE) #"[3: ( [1: SE.1 :1] + [2: SE.2 :2] ) :3]"
+#'
+#' print(mt) #"( SE.1 + SE.2 )"
+#'
+#' print(mt, show.node.ids=TRUE) #"[3: ( [1: SE.1 :1] + [2: SE.2 :2] ) :3]"
 as.character.ModelTree <- function(model.tree, show.node.ids=FALSE) {
   root.node <- find.root.node(model.tree)
   return(node.to.string(model.tree, root.node, show.node.ids))
 }
 
+#' @rdname as.character.ModelTree
+#' @export
 print.ModelTree <- function(model.tree, show.node.ids=FALSE) {
-  print(as.character.ModelTree(model.tree, show.node.ids))
+  cat(as.character.ModelTree(model.tree, show.node.ids))
+  cat("\n")
 }
 
+#' Print a Summary of a Model Tree
+#'
+#' @param model.tree ModelTree object to summarise
+#'
+#' @export
+#'
+summary.ModelTree <- function(model.tree) {
+  cat("Operation functions:\n")
+  for (op in names(model.tree$operation.functions)) {
+    cat(paste('- "', op, '"\n', sep=""))
+  }
+
+  cat("\nKernel Classes:\n")
+  for (kclass in names(model.tree$kernel.class.functions)) {
+    cat(paste('- ', kclass, '\n', sep=""))
+    if (is.character(model.tree$kernel.class.functions[[kclass]])) {
+      cat(paste('  - Built-in kernel: ', model.tree$kernel.class.functions[[kclass]], '\n', sep=""))
+    }
+    if (length(model.tree$kernel.class.additional.params[[kclass]] > 0)) {
+      cat(paste('  - Additional Parameters:\n', sep=""))
+      for (addparam in names (model.tree$kernel.class.additional.params[[kclass]])) {
+        cat(paste('    - ', addparam, '\n', sep=""))
+      }
+    }
+  }
+
+  cat("\nKernel Instances:\n")
+  for (i in 1:nrow(model.tree$kernel.instances)) {
+    kinst_ID <- model.tree$kernel.instances$kernelInstanceID[i]
+    kinst_class <- model.tree$kernel.instances$kernelClassName[i]
+    cat(paste('- ', kinst_ID, '\n', sep=""))
+    cat(paste('  - Class:', kinst_class, '\n', sep=""))
+    cat(paste('  - Hyperparameters:\n', sep=""))
+    hp_vec <- model.tree$kernel.inst.hyper.param.indices[[kinst_ID]]
+    for (hp in seq_along(hp_vec)) {
+      if (is.null(model.tree$all.hyper.params[hp_vec[hp]])) {
+        hp_val <- "NULL"
+      } else {
+        hp_val <- model.tree$all.hyper.params[hp_vec[hp]]
+      }
+      cat(paste('    - ', model.tree$kernel.class.hyper.param.names[[kinst_class]][hp],
+                ": ", hp_val, '\n', sep=""))
+    }
+  }
+
+  cat("\nModel Tree Formula:\n")
+  cat(paste("  ", as.character(model.tree), "\n", sep=""))
+
+  cat("\nModel Tree Formula (with node number annotations):\n")
+  cat(paste("  ", as.character(model.tree, show.node.ids=T), "\n", sep=""))
+}
+
+#' Add a Kernel Class to a Model Tree
+#'
+#' @param orig.model.tree a ModelTree object
+#' @param kernel.class.name the name of the kernel class (arbitrary, must not
+#' match the class name of any kernel already in the model tree).
+#' @param kernel either an R function defining a kernel, or a string indicating a built-in kernel type
+#' @param hyper.param.names a vector containing the names of the kernel hyperparameters
+#' @param kernel.additional.params a list containing any additional kernel parameters
+#' @param kernel.grad either an R function returning the gradient of \code{kernel}, or NULL. If \code{kernel}
+#' is a string specifying a built-in kernel, \code{kernel.grad} should be NULL. If \code{kernel} is an
+#' R function and \code{kernel.grad} is NULL, \code{\link[numDeriv]{grad}} will be used to derive a numerical
+#' gradient.
+#'
+#' @return a ModelTree object
+#' @export
+#'
+#' @examples
+#' mt <- create.model.tree()
+#' mt <- add.kernel(mt, "SE", "squaredExponential", c("l"))
 add.kernel <- function(orig.model.tree,
                        kernel.class.name,
                        kernel,
@@ -184,6 +301,31 @@ add.kernel <- function(orig.model.tree,
   return(model.tree)
 }
 
+#' Insert Kernel Instance into Model Tree
+#'
+#' @param orig.model.tree a ModelTree object
+#' @param node the node at which to insert the kernel instance
+#' @param kernel.class.name a string indicating the class of kernel to insert
+#' @param operation.id a string indicating how to insert the kernel at \code{node}.
+#' Must be "*" or "+", or NULL if the model tree is currently empty.
+#' @param hyper.params the hyper parameters of the inserted kernel. Can be NULL to
+#' fit hyper parameters at a later time.
+#'
+#' @return a ModelTree object
+#' @export
+#'
+#' @examples
+#' mt <- create.model.tree.builtin()
+#'
+#' mt <- insert.kernel.instance(mt, 1, "SE", NULL)
+#' print(mt) # "SE.1"
+#'
+#' mt <- insert.kernel.instance(mt, 1, "SE", "*")
+#' print(mt) # "( SE.1 * SE.2 )"
+#'
+#' mt <- insert.kernel.instance(mt, 3, "RQ", "+")
+#' print(mt) # "( ( SE.1 * SE.2 ) + RQ.1 )"
+#'
 insert.kernel.instance <- function(orig.model.tree,
                                    node,
                                    kernel.class.name,
@@ -337,16 +479,102 @@ generate.next.models <- function(model.tree) {
   return(models)
 }
 
+#' Add Polynomial Kernel Classes to a Model Tree
+#'
+#' @param mt a ModelTree object
+#' @param degrees a vector containing the degrees to add
+#' @param homogeneous boolean indicating whether to add homogeneous polynomial kernels
+#' @param poly boolean indicating whether to add non-homogeneous polynomial kernels
+#' @param generalised boolean indicating whether to add generealised polynomial kernels
+#'
+#' @return a ModelTree object
+#' @export
+#'
+#' @examples
+#' mt <- create.model.tree()
+#' mt <- add.polynomial.kernels(mt, degrees=c(2,3))
+add.polynomial.kernels <- function(mt, degrees=c(1,2),
+                                   homogeneous=TRUE, poly=TRUE, generalised=TRUE) {
+  for (degree in degrees) {
+    if (homogeneous) {
+      mt <- add.kernel(mt,
+                       paste("homogPoly", degree, sep="_"),
+                       "homogeneousPolynomial",
+                       numeric(0),
+                       list(degree=degree)
+      )
+    }
+    if (poly) {
+      mt <- add.kernel(mt,
+                       paste("poly", degree, sep="_"),
+                       "polynomial",
+                       c("c"),
+                       list(degree=degree)
+      )
+    }
+    if (generalised) {
+      mt <- add.kernel(mt,
+                       paste("genPoly", degree, sep="_"),
+                       "generalisedPolynomial",
+                       c("l", "c"),
+                       list(degree=degree)
+      )
+    }
+  }
+  return(mt)
+}
+
+#' Create a Model Tree Containing All Built-in Kernels
+#'
+#' Returns a model tree instance populated with a basis set of all of the built in kernels.
+#'
+#' @return A modelTree object
+#' @export
+#'
+#' @examples
+#' mt <- create.model.tree.builtin()
 create.model.tree.builtin <- function() {
+  builtin.kernels <- c(SE="squaredExponential",
+                       RQ="rationalQuadratic",
+                       periodic="periodic",
+                       constant="constant",
+                       NN="neuralNetwork"
+
+  )
+
+  # If there are no hyperparams, use numeric(0) rather than c() so the c++
+  # code works - it expects a vector not NULL.
+  builtin.kernel.hyperparam.names <- list(SE=c("l"),
+                                          RQ=c("l", "alpha"),
+                                          periodic=c("l", "p"),
+                                          constant=c("sigma_0"),
+                                          NN=c("sigma_0", "sigma")
+                                          #"oneDLinear"=c("intercept","sigma_1")
+                                          #"changepoint"=c("changepoint", "transitionRate")
+  )
+
+  builtin.kernel.additional.hyperparams <- list(SE=list(),
+                                                RQ=list(),
+                                                periodic=list(),
+                                                constant=list(),
+                                                NN=list()
+                                                #"oneDLinear"=list(dimensionIndex=1)
+                                                #"changepoint"=list(dimensionIndex=1)
+  )
+
   mt <- create.model.tree()
-  for (kernel in builtin.kernels) {
+  for (kernel_index in seq_along(builtin.kernels)) {
+    kernel_name <- names(builtin.kernels)[kernel_index]
     mt <- add.kernel(mt,
-                     kernel,
-                     kernel,
-                     builtin.kernel.hyperparam.names[[kernel]],
-                     builtin.kernel.additional.hyperparams[[kernel]]
+                     kernel_name,
+                     builtin.kernels[kernel_name],
+                     builtin.kernel.hyperparam.names[[kernel_name]],
+                     builtin.kernel.additional.hyperparams[[kernel_name]]
                      )
   }
+
+  mt <- add.polynomial.kernels(mt, degrees=c(1,2), homogeneous=FALSE, poly=FALSE)
+
   return(mt)
 }
 

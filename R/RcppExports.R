@@ -13,6 +13,31 @@ getCovarianceMatrixGradArray <- function(x, k, sigma_n, hyperParams, additionalP
     .Call('gaussianProcess_getCovarianceMatrixGradArray', PACKAGE = 'gaussianProcess', x, k, sigma_n, hyperParams, additionalParams)
 }
 
+#' Select Built-in C++ Kernels by Name
+#'
+#' Built in kernels include:
+#' \itemize{
+#'   \item squaredExponential
+#'   \item rationalQuadratic
+#'   \item periodic
+#'   \item constant
+#'   \item generalisedLinear
+#'   \item oneDLinear
+#'   \item changepoint
+#'   \item randomForest
+#'   \item neuralNetwork
+#'   \item generalisedPolynomial
+#'   \item polynomial
+#'   \item homogeneousPolynomial
+#' }
+#'
+#' @param kernelName the kernel's name (as a string)
+#' @param a the first data point
+#' @param b the second data point
+#' @param hyperParams the kernel's hyperparameters as a named numeric vector
+#' @param additionalParams a list of any additional parameters
+#'
+#' @export
 callKernelByString <- function(kernelName, a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_callKernelByString', PACKAGE = 'gaussianProcess', kernelName, a, b, hyperParams, additionalParams)
 }

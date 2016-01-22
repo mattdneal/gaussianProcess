@@ -1,3 +1,7 @@
+#' Test the ability of the BIC search to identify the data structure
+#'
+#'
+#' @export
 test.structure.recreation <- function(base.generator.model,
                                       base.search.model,
                                       num.expansions=1,

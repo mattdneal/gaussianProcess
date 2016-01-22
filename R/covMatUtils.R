@@ -1,3 +1,14 @@
+#' Evaluate Covariance Matrix of a Model Tree Node
+#'
+#'  This function recursively evaluates a model tree at the given node,
+#'  returning the covariance matrix for that node
+#'
+#' @param model.tree an object of class modelTree
+#' @param inst.cov.mats a named list of the covariance matrices of the kernel instances in the model tree
+#' @param node the node to evaluate
+#'
+#' @return A covariance matrix
+#'
 eval.cov.mat.node <- function(model.tree, inst.cov.mats, node) {
   node.entry <- model.tree$tree[node, ]
   if (!is.na(node.entry["operationID"])) {
@@ -19,6 +30,17 @@ eval.cov.mat.node <- function(model.tree, inst.cov.mats, node) {
   }
 }
 
+#' Evaluate Covariance Matrix Grad of a Model Tree Node
+#'
+#'  This function recursively evaluates a model tree at the given node, returning
+#'  the grad of the covariance matrix at that node
+#'
+#' @param model.tree An object of class modelTree
+#' @param inst.cov.mats a named list of the covariance matrices of the kernel instances in the model tree
+#' @param inst.cov.mat.grads The covariance matrix grads of the kernel instances in the model tree
+#' @param node The node to evaluate
+#'
+#' @return A covariance matrix grad (as an array)
 eval.cov.mat.grad.node <- function(model.tree, inst.cov.mats, inst.cov.mat.grads, node) {
   node.entry <- model.tree$tree[node, ]
   if (!is.na(node.entry["operationID"])) {
@@ -62,6 +84,15 @@ eval.cov.mat.grad.node <- function(model.tree, inst.cov.mats, inst.cov.mat.grads
 }
 
 
+#' Get the Covariance Matrix for a Kernel
+#'
+#' @param x A matrix of data to find the covariance matrix of
+#' @param k A kernel function
+#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#' @param hyper.params The hyperparameters of \code{k}
+#' @param additional.params Any additional parameters of \code{k}
+#'
+#' @return A covariance matrix
 get.covariance.matrix.kernel <- function(x, k, sigma.n, hyper.params, additional.params) {
 
   if (is.character(k)) {
@@ -93,6 +124,15 @@ get.covariance.matrix.kernel <- function(x, k, sigma.n, hyper.params, additional
 }
 
 
+#' Get the Covariance Matrix Grad for a Kernel
+#'
+#' @param x A matrix of data to find the covariance matrix of
+#' @param kernel.grad A function returning the grad of a kernel (as a named vector)
+#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#' @param hyper.params The hyperparameters of \code{kernel.grad}
+#' @param additional.params Any additional parameters of \code{kernel.grad}
+#'
+#' @return A covariance matrix grad (as an array)
 get.covariance.matrix.grad.kernel <- function(x, kernel.grad, sigma.n, hyper.params, additional.params) {
 
   sigma.n.name <- "sigma.n"
@@ -143,6 +183,15 @@ get.covariance.matrix.grad.kernel <- function(x, kernel.grad, sigma.n, hyper.par
 }
 
 
+#' Get Kernel Instance Covariance Matrices or Grads
+#'
+#' Calculates the covariance matrices (or associated grads) for the kernel instances appearing in a model tree
+#'
+#' @param x A numeric matrix
+#' @param model.tree A modelTree object
+#' @param return.grad Whether to return the covariance matrices or the associated grads
+#'
+#' @return A named list containing covariance matrices (or grad arrays), with one entry for each kernel instance.
 get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
 
   inst.cov.mats <- list()
@@ -185,6 +234,25 @@ get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
 }
 
 
+#' Covariance Matrix of a Model Tree
+#'
+#' Calculates the covariance matrix for a modelTree object
+#'
+#' @param x A numeric matrix
+#' @param model.tree A modelTree object
+#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#'
+#'
+#' @return A covariance matrix
+#' @export
+#'
+#' @examples
+#' mt <- create.model.tree.builtin()
+#' mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
+#'
+#' x <- rnorm(50)
+#'
+#' cov.mat <- get.covariance.matrix.model.tree(x, mt, sigma.n=0.1)
 get.covariance.matrix.model.tree <- function(x, model.tree, sigma.n) {
 
   inst.cov.mats <- get.inst.cov.mats(x, model.tree, return.grad=FALSE)
@@ -200,6 +268,24 @@ get.covariance.matrix.model.tree <- function(x, model.tree, sigma.n) {
 }
 
 
+#' Covariance Matrix Grad of a Model Tree
+#'
+#' Calculates the covariance matrix grad for a modelTree object
+#'
+#' @param x A numeric matrix
+#' @param model.tree A modelTree object
+#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#'
+#' @return An array containing the covariance matrix grad.
+#' @export
+#'
+#' @examples
+#' mt <- create.model.tree.builtin()
+#' mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
+#'
+#' x <- rnorm(50)
+#'
+#' cov.mat <- get.covariance.matrix.model.tree(x, mt, sigma.n=0.1)
 get.covariance.matrix.grad.model.tree <- function(x, model.tree, sigma.n) {
   sigma.n.name <- "sigma.n"
   num.training.points <- nrow(x)
@@ -226,6 +312,18 @@ get.covariance.matrix.grad.model.tree <- function(x, model.tree, sigma.n) {
 
 }
 
+#' Get predictive K* matrix
+#'
+#' This function returns the K* matrix of covariances between the training data and the data to predict.
+#'
+#' @param data.to.predict numeric matrix of data to predict
+#' @param training.data the data used to train the Gaussian process
+#' @param k the kernel function
+#' @param hyper.params the kernel's hyperparameters
+#' @param additional.params the kernel's additional parameters
+#'
+#' @return a numeric matrix
+#' @export
 get.kstar.mat.kernel <- function(data.to.predict, training.data, k, hyper.params, additional.params) {
 
   num.data.points <- nrow(data.to.predict)
@@ -251,6 +349,15 @@ get.kstar.mat.kernel <- function(data.to.predict, training.data, k, hyper.params
   return(K.star)
 }
 
+#' K* matrix of a model tree node
+#'
+#' Recursively evaluates the K* matrix of a model tree from a given node.
+#'
+#' @param model.tree a model tree
+#' @param inst.kstar.mats a named list of the K* matrices of the kernel instances in the model tree
+#' @param node the node to evaluate
+#'
+#' @return a numeric matrix
 eval.node.kstar.mat <- function(model.tree, inst.kstar.mats, node) {
   # More copypasta - maybe fix this too?
   node.entry <- model.tree$tree[node, ]
@@ -273,6 +380,16 @@ eval.node.kstar.mat <- function(model.tree, inst.kstar.mats, node) {
   }
 }
 
+#' K* Matrix of a Model Tree
+#'
+#' Returns the K* matrix between training data and data to predict for a given modelTree object.
+#'
+#' @param data.to.predict a numeric matrix
+#' @param training.data a numeric matrix
+#' @param model.tree a modelTree object
+#'
+#' @return a numeric matrix
+#' @export
 get.kstar.mat.model.tree <- function(data.to.predict, training.data, model.tree) {
 
   num.data.points <- nrow(data.to.predict)

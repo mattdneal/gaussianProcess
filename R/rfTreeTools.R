@@ -104,6 +104,18 @@ navigate.rf.tree <- function(tree, data, height=NULL) {
   return(current.index)
 }
 
+#' Create Additional Params List for Random Forest Kernel
+#'
+#' Takes a \code{\link[randomForest]{randomForest}} object and extracts the
+#' components required by \code{\link{randomForestKernel}} and
+#' \code{\link{randomForestKernelGrad}}
+#'
+#' @param rf a randomForest object
+#'
+#' @return a list containing the additional params for \code{\link{randomForestKernel}}.
+#' @export
+#'
+#' @importFrom randomForest getTree
 create.rf.additional.params <- function(rf) {
   additional.params <- list()
   forest <- list()

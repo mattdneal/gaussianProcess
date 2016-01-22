@@ -7,6 +7,30 @@ rplaw <- function(n, alpha, x_0=1, x_1=10^6) {
 }
 
 
+#' Create a gaussianProcess object
+#'
+#' This function creates a gaussianProcess object along with associated functions for fitting hyperparameters.
+#'
+#' Intend to rework this to fit the R S3 framework - it currently encloses all its methods to allow caching in
+#' optimx calls, but with a bit more experience I think this isn't actually necessary.
+#'
+#' @param x A matrix or data frame of predictor variables
+#' @param y A numeric vector of response variables
+#' @param model.tree The model tree defining the kernel function for the Gaussian process
+#'
+#' @return An untrained gaussianProcess object
+#' @export
+#'
+#' @importFrom optimx optimx
+#'
+#' @examples
+#' x <- rnorm(50)
+#' y <- sin(1/(x^2 + 0.15))
+#' mt <- create.model.tree.builtin()
+#' mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
+#' gp <- create.gaussian.process(x, y, mt)
+#' gp$fit.hyperparams(NA)
+#'
 create.gaussian.process <- function(x, y, model.tree) {
   gp.obj <- new.env()
   class(gp.obj) <- "GaussianProcess"
@@ -158,12 +182,12 @@ create.gaussian.process <- function(x, y, model.tree) {
                                      num.resamples=NULL,
                                      additional.optimx.runs=5,
                                      additional.par.perc.diff=0.1,
-                                     random.init.scale=10,
-                                     abs.min.sigma.n=0.01,
+                                     random.init.scale=1,
+                                     abs.min.sigma.n=0.001,
                                      abs.min.hyper.params=0,
                                      optimx.method="L-BFGS-B", max.iterations=10000,
-                                     optimx.starttests=TRUE, optimx.trace=0,
-                                     verbose=TRUE) {
+                                     optimx.starttests=FALSE, optimx.trace=0,
+                                     verbose=FALSE) {
     hyper.params.init <- model.tree$all.hyper.params
 
     # generate random.init.gridsize random pars and find the best
@@ -366,6 +390,31 @@ create.gaussian.process <- function(x, y, model.tree) {
 }
 
 
+#' Create Predictions Using a Gaussian Process
+#'
+#' Returns the posterior mean and variance of a set of data points under a given Gaussian process
+#'
+#' @param gp.obj A trained gaussianProcess object
+#' @param data Data to predict
+#'
+#' @return a list containing named elements:
+#' \itemize{
+#'   \item \code{mean} - the predicted mean value for each data point in \code{data}.
+#'   \item \code{var} - the variance about the predicted mean for each data point in \code{data}.
+#' }
+#' @export
+#'
+#' @examples
+#' x <- rnorm(50)
+#' y <- sin(1/(x^2 + 0.15))
+#' mt <- create.model.tree.builtin()
+#' mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
+#' gp <- create.gaussian.process(x, y, mt)
+#' gp$fit.hyperparams(NA)
+#'
+#' x1 <- rnorm(50)
+#' y1.predicted <- predict(gp, x1)$mean
+#'
 predict.GaussianProcess <- function(gp.obj, data) {
   if (!is.matrix(data)) {
     data <- matrix(data, nrow=length(data))
@@ -385,12 +434,22 @@ predict.GaussianProcess <- function(gp.obj, data) {
   for (i in seq(num.data.points)) {
     v <- gp.obj$cov.mat.L.inv %*% t(K.star[i, , drop=F])
     pred.out$var[i, 1] <- get.covariance.matrix.model.tree(data[i, , drop=FALSE], gp.obj$model.tree, 0) - t(v) %*% v
-    # pred.out$var[i, 1] <- kernel(data[i, ], data[i, ], gp.obj$kernel.hyper.params) - t(v) %*% v
   }
 
   return(pred.out)
 }
 
+#' Plot a Gaussian Process
+#'
+#' Plots the posterior mean and first three standard deviations of a one-dimensional Gaussian process.
+#'
+#' @param gp.obj A gaussianProcess object
+#' @param xlim The limits of the x-axis in the plot. Defaults to the limits of the training data plus one-quarter of the range at either end.
+#' @param num.points The number of data points to calculate for the plot
+#' @param ... Additional parameters to pass to \code{plot}
+#'
+#' @return NULL
+#' @export
 plot.GaussianProcess <- function(gp.obj, xlim=NULL, num.points=1000, ...) {
   if (is.null(xlim)) {
     x.min <- min(gp.obj$training.points)
@@ -437,6 +496,18 @@ plot.GaussianProcess <- function(gp.obj, xlim=NULL, num.points=1000, ...) {
 
 }
 
+#' Sample a function from a Gaussian Process Prior
+#'
+#' @param x Points to sample at
+#' @param kernel Kernel of the Gaussian Process
+#' @param sigma.n Standard deviation of the noise
+#' @param hyper.params Hyperparameters of the kernel
+#' @param num.functions The number of different functions to generate
+#'
+#' @return A numeric vector of values at the sampled points
+#' @export
+#'
+#' @importFrom mnormt rmnorm
 sample.functions.from.kernel <- function(x, kernel, sigma.n, hyper.params, num.functions=1) {
   cov.mat <- get.covariance.matrix.kernel(x, kernel, sigma.n, hyper.params)
   y <- rmnorm(n=num.functions, mean=rep(0, nrow(cov.mat)), cov.mat)
@@ -444,6 +515,17 @@ sample.functions.from.kernel <- function(x, kernel, sigma.n, hyper.params, num.f
 }
 
 
+#' Sample a function from a Gaussian Process Prior
+#'
+#' @param x Points to sample at
+#' @param model.tree Model tree which defines the kernel of the Gaussian Process
+#' @param sigma.n Standard deviation of the noise
+#' @param num.functions The number of different functions to generate
+#'
+#' @return A numeric vector of values at the sampled points
+#' @export
+#'
+#' @importFrom mnormt rmnorm
 sample.functions.from.model.tree <- function(x, model.tree, sigma.n, num.functions=1) {
   if (!is.matrix(x)) {
     x <- matrix(x)
@@ -454,19 +536,4 @@ sample.functions.from.model.tree <- function(x, model.tree, sigma.n, num.functio
 }
 
 
-
-speedtest.solve <- function(gp.obj) {
-  R <-  gp.obj$cov.mat.chol
-  y <- gp.obj$training.point.values
-  z <- forwardsolve(t(R), y)
-  x <- backsolve(R, z)
-  return(x)
-}
-
-speedtest.inv <- function(gp.obj){
-  R <-  gp.obj$cov.mat.chol
-  y <- gp.obj$training.point.values
-  x.prime <- chol2inv(R) %*% y
-  return(x.prime)
-}
 

@@ -1,29 +1,15 @@
-builtin.kernels <- c("squaredExponential",
-                     "rationalQuadratic",
-                     "periodic",
-                     "constant"
-                     #"oneDLinear"
-                     #"changepoint"
-)
 
-# If there are no hyperparams, use numeric() rather than c() so the c++
-# code works - it expects a vector not NULL.
-builtin.kernel.hyperparam.names <- list("squaredExponential"=c("l"),
-                                        "rationalQuadratic"=c("l", "alpha"),
-                                        "periodic"=c("l", "p"),
-                                        "constant"=c("sigma_0")
-                                        #"oneDLinear"=c("intercept","sigma_1")
-                                        #"changepoint"=c("changepoint", "transitionRate")
-                                        )
-
-builtin.kernel.additional.hyperparams <- list("squaredExponential"=list(),
-                                              "rationalQuadratic"=list(),
-                                              "periodic"=list(),
-                                              "constant"=list()
-                                              #"oneDLinear"=list(dimensionIndex=1)
-                                              #"changepoint"=list(dimensionIndex=1)
-                                             )
-
+#' Create a numerical gradient function for a kernel using the \code{\link[numDeriv]{grad}} function.
+#'
+#' @param k kernel function
+#' @param method method for creating numeric grad, see \code{\link[numDeriv]{grad}}
+#' @param method.args method arguments for creating numeric grad, see \code{\link[numDeriv]{grad}}
+#' @param additional.params additional parameters for the kernel function \code{k}
+#'
+#' @return A function which gives the numeric grad of \code{k} w.r.t. the kernel hyperparameters.
+#' @export
+#'
+#' @importFrom numDeriv grad
 create.numeric.grad <- function(k, method="Richardson", method.args=NULL, additional.params=list()) {
   k.grad <- function(a, b, hyper.params, additional.params) {
     out <- grad(function(inner.hyper.params) {k(a, b, inner.hyper.params, additional.params)},
@@ -36,6 +22,27 @@ create.numeric.grad <- function(k, method="Richardson", method.args=NULL, additi
   return(k.grad)
 }
 
+#' Test an Analytic Gradient Against a Numeric Gradient
+#'
+#' Creates a numerical approximation to the gradient function of a kernel (using \code{\link{create.numeric.grad}})
+#' and compares it to an analytic gradient function. If the maximum relative difference exceeds 0.01, returns the failing inputs,
+#' otherwise returns TRUE.
+#'
+#' @param k a kernel function
+#' @param k.grad the analytic gradient to test
+#' @param hyper.param.names names of the kernel's hyperparameters
+#' @param additional.params any additional parameters of the kernel
+#' @param repetitions number of repetitions to attempt
+#'
+#' @return If the gradients match, returns TRUE. If a mismatch is found, returns a list with named entries:
+#' \itemize{
+#'   \item a, b, hyper.params - the parameters passed to the gradient functions
+#'   \item grad - return value of the analytic gradient
+#'   \item grad.num - return value of the numerical gradient
+#'   \item max.diff - the maximum relative difference observed between the two gradient functions so far (including the failed set of inputs)
+#'   \item i - the number of inputs tested (including the failed set of inputs)
+#' }
+#' @export
 test.kernel.grad <- function(k, k.grad, hyper.param.names, additional.params, repetitions=1000) {
   k.grad.num <- create.numeric.grad(k, additional.params=additional.params)
   max.diff <- 0
@@ -51,10 +58,10 @@ test.kernel.grad <- function(k, k.grad, hyper.param.names, additional.params, re
     #print(sqrt(sum((a-b)^2)))
     max.diff <- max(max.diff, sqrt(sum((kg-kgn)^2))/sqrt(sum((kgn)^2)))
     #print(kg / kgn)
-    print(k(a, b, hyper.params, additional.params))
-    print(kg)
-    print(kgn)
-    if (FALSE & (!isTRUE(all.equal(kg, kgn)) | max.diff > 0.01)) {
+    #print(k(a, b, hyper.params, additional.params))
+    #print(kg)
+    #print(kgn)
+    if ((max.diff > 0.01)) {
       return(list(a=a,
                   b=b,
                   hyper.params=hyper.params,
@@ -110,6 +117,20 @@ squared.exponential.kernel.ard.grad <- function(a, b, hyper.params) {
   return(ret)
 }
 
+#' Random Partition Kernel
+#'
+#' Takes a partition function and returns the covariance between two points
+#' derived from that partition function. The partition function should return
+#' a vector of integers, with each integer representing the result of a different
+#' classifier.
+#'
+#' @param a first data point
+#' @param b second data point
+#' @param hyper.params an empy vector (included for compatibility with kernel function format)
+#' @param additional.params A list with a named element "partitionFunction" containing the partition function which defines the kernel
+#'
+#' @return The covariance between \code{a} and \code{b}
+#' @export
 random.partition.kernel <- function(a, b, hyper.params=NULL, additional.params) {
   partition.function <- additional.params$partitionFunction
   a.partitions <- partition.function(a)
@@ -118,7 +139,17 @@ random.partition.kernel <- function(a, b, hyper.params=NULL, additional.params) 
   return(sum(a.partitions == b.partitions) / num.comparisons)
 }
 
-# Random forest kernel
+#' Random forest kernel
+#'
+#' @param rf a randomForest object
+#'
+#' @return a function
+#' @export
+#'
+#' @importFrom randomForest getTree
+#' @importFrom hash hash
+#'
+#' @seealso \code{\link[randomForest]{randomForest}}
 random.forest.partition.function.generator <- function(rf) {
   num.trees <- rf$ntree
   trees <- list()

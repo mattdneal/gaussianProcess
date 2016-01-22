@@ -1,4 +1,20 @@
-# Given a trained GP object, return the BIC value
+
+
+#' Calculate BIC of a GP
+#'
+#' @param gp.obj A trained gaussianProcess object
+#'
+#' @return The BIC value for the input GP object.
+#' @export
+#' @seealso \code{\link{bic.model.search}} and \code{\link{gaussianProcess}}
+#'
+#' @examples
+#' x <- rnorm(50)
+#' y <- sin(1/(x^2 + 0.15))
+#' mt <- create.model.tree.builtin()
+#' mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
+#' gp <- create.gaussian.process(x, y, mt)
+#' gp$fit.hyperparams(NA)
 bayesian.information.criterion <- function(gp.obj) {
   # Must be a trained GP
   log.L <- gp.obj$log.marginal.likelihood
@@ -7,7 +23,24 @@ bayesian.information.criterion <- function(gp.obj) {
   return(-2 * log.L + k * log(n))
 }
 
-# Take a model tree and some data, and build the model using BIC
+#' Perform Model Selection Using BIC
+#'
+#' @param x A matrix or data frame of predictors
+#' @param y A numeric vector of responses
+#' @param base.model.tree The model tree at which the search starts
+#' @param plot.gp=FALSE Whether to plot the gaussian processes encountered during the search. If ncol(x) > 1 this parameter is ignored and no plots are created.
+#' @param reset.params=FALSE By default the search starts with the optimum hyperparameter values found in the previous step in the search (with new hyperparameters fitted from random start points). Setting this to TRUE causes all hyperparameters to be randomly set at each step.
+#' @param max.new.nodes=3 The number of kernel instances to add to the base model.
+#' @param ... Additional parameters to be passed to gp.obj$fit.hyperparameters (see \code{\link{gaussianProcess}})
+#'
+#' @return The trained gaussianProcess object with the best BIC.
+#' @export
+#'
+#' @examples
+#' x <- rnorm(50)
+#' y <- sin(1/(x^2 + 0.15))
+#' mt <- create.model.tree.builtin()
+#' gp <- bic.model.search(x, y, mt)
 bic.model.search <- function(x, y, base.model.tree, plot.gp=FALSE, reset.params=FALSE, max.new.nodes=3, ...) {
   model.bic.vec <- numeric()
   if (nrow(base.model.tree$tree) != 0) {
