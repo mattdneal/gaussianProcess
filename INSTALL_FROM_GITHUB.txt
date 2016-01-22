@@ -1,0 +1,4 @@
+To install direct from GitHub, run the following in R:
+
+library(devtools)
+install_github("mattdneal", "gaussianProcess")
