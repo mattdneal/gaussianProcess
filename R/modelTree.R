@@ -286,7 +286,7 @@ summary.ModelTree <- function(model.tree) {
   }
 
   cat("\nKernel Instances:\n")
-  for (i in 1:nrow(model.tree$kernel.instances)) {
+  for (i in seq_along(model.tree$kernel.instances[, 1])) {
     kinst_ID <- model.tree$kernel.instances$kernelInstanceID[i]
     kinst_class <- model.tree$kernel.instances$kernelClassName[i]
     cat(paste('- ', kinst_ID, '\n', sep=""))
@@ -513,6 +513,107 @@ insert.kernel.instance <- function(orig.model.tree,
   return(model.tree)
 }
 
+#' Delete a Node in a Model Tree
+#'
+#' @param model.tree a ModelTree object
+#' @param node the node to delete (must not be the root node)
+#'
+#' @return a clone of \code{model.tree} with \code{node} deleted.
+#' @export
+delete.node <- function(model.tree, node) {
+  root.node <- find.root.node(model.tree)
+  if (node == root.node) {
+    stop("Can't delete the root node.")
+  }
+
+  new.mt <- clone.ModelTree(model.tree)
+
+  # Repoint the grandparent node at this node's sibling
+  parent.node <- find.parent.node(new.mt, node)
+
+  if (new.mt$tree[parent.node, "leftDaughter"] == node) {
+    sibling.node <- new.mt$tree[parent.node, "rightDaughter"]
+    new.mt$tree[parent.node, "rightDaughter"] <- NA
+  } else {
+    sibling.node <- new.mt$tree[parent.node, "leftDaughter"]
+    new.mt$tree[parent.node, "leftDaughter"] <- NA
+  }
+
+  if (!parent.node == root.node) {
+    grandparent.node <- find.parent.node(new.mt, parent.node)
+
+    if (new.mt$tree[grandparent.node, "leftDaughter"] == parent.node) {
+      new.mt$tree[grandparent.node, "leftDaughter"] <- sibling.node
+    } else {
+      new.mt$tree[grandparent.node, "rightDaughter"] <- sibling.node
+    }
+  }
+
+  # Now delete the orphaned nodes (by overwriting with NAs then deleting the rows)
+  deleted.nodes <- numeric(0)
+  node.queue <- c(parent.node)
+  while (length(node.queue) > 0) {
+    current.node <- node.queue[1]
+    node.queue <- node.queue[-1]
+    node.row <- new.mt$tree[current.node, ]
+    if (!is.na(node.row$operationID)) {
+      node.queue <- as.numeric(c(node.queue,
+                      new.mt$tree[current.node, "leftDaughter"],
+                      new.mt$tree[current.node, "rightDaughter"]))
+      node.queue <- node.queue[!is.na(node.queue)]
+    }
+    new.mt$tree[current.node, ] <- NA
+
+    deleted.nodes <- c(deleted.nodes, current.node)
+  }
+
+  node.indices <- seq(nrow(new.mt$tree))[-deleted.nodes]
+
+  new.mt$tree <- new.mt$tree[-deleted.nodes, ]
+
+  rownames(new.mt$tree) <- 1:nrow(new.mt$tree)
+
+  # We need to update the node references in the tree
+  for (i in 1:nrow(new.mt$tree)) {
+    for (child in c("leftDaughter", "rightDaughter")) {
+      if (!is.na(new.mt$tree[i, child])) {
+        new.mt$tree[i, child] <- which(node.indices == new.mt$tree[i, child])
+      }
+    }
+  }
+
+  remaining.inst.ids <- unique(new.mt$tree[, "kernelInstanceID"])
+  deleted.hyper.param.indices <- c()
+
+  for (i in seq_along(new.mt$kernel.instances[, "kernelInstanceID"])) {
+    inst.id <- new.mt$kernel.instances[i, "kernelInstanceID"]
+    if (!(inst.id %in% remaining.inst.ids)) {
+      new.mt$kernel.instances <- new.mt$kernel.instances[-i, ]
+
+      deleted.hyper.param.indices <- c(deleted.hyper.param.indices,
+                                       new.mt$kernel.inst.hyper.param.indices[[inst.id]])
+
+      temp.index <- which(names(new.mt$kernel.inst.hyper.param.indices) == inst.id)
+      new.mt$kernel.inst.hyper.param.indices <- new.mt$kernel.inst.hyper.param.indices[-temp.index]
+    }
+  }
+
+  # If we deleted some hyper parameters we need to translate the old indices to
+  # the new indices.
+  if (length(deleted.hyper.param.indices) > 0) {
+    hyper.param.indices <- seq_along(new.mt$all.hyper.params)[-deleted.hyper.param.indices]
+    new.mt$all.hyper.params <- new.mt$all.hyper.params[-deleted.hyper.param.indices]
+    for (i in seq_along(new.mt$kernel.inst.hyper.param.indices)) {
+      for (j  in seq_along(new.mt$kernel.inst.hyper.param.indices[[i]])) {
+        new.mt$kernel.inst.hyper.param.indices[[i]][j] <-
+          which(hyper.param.indices == new.mt$kernel.inst.hyper.param.indices[[i]][j])
+      }
+    }
+  }
+
+  return(new.mt)
+}
+
 generate.next.models <- function(model.tree) {
 
   # Generate a list of models
@@ -538,6 +639,13 @@ generate.next.models <- function(model.tree) {
         }
       }
     }
+    root.node <- find.root.node(model.tree)
+    for (node in 1:nrow(model.tree$tree)) {
+      if (node != root.node) {
+        models[[i]] <- delete.node(model.tree, node)
+        i <- i + 1
+      }
+    }
   }
 
   # Reduce to canonical form and dedupe
@@ -549,7 +657,9 @@ generate.next.models <- function(model.tree) {
 
   duplicates <- which(duplicated(model.strings))
 
-  models <- models[-duplicates]
+  if (length(duplicates) > 0) {
+    models <- models[-duplicates]
+  }
 
   return(models)
 }

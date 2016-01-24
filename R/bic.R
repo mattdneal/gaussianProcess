@@ -43,12 +43,17 @@ bayesian.information.criterion <- function(gp.obj) {
 #' gp <- bic.model.search(x, y, mt)
 bic.model.search <- function(x, y, base.model.tree, plot.gp=FALSE, reset.params=FALSE, max.new.nodes=3, ...) {
   model.bic.vec <- numeric()
+
+  evaluated.models <- character(0)
+
   if (nrow(base.model.tree$tree) != 0) {
     # There is a base model defined, so first evaluate that.
+    order.tree(base.model.tree)
     gp.obj <- create.gaussian.process(x, y, base.model.tree)
     result <- gp.obj$fit.hyperparams(sigma.n.init=NA, ...)
 
     model.bic.vec[as.character(gp.obj$model.tree)] <- bayesian.information.criterion(gp.obj)
+    evaluated.models <- c(evaluated.models, as.character(gp.obj$model.tree))
     print(paste("Base model:", as.character(gp.obj$model.tree)))
     print(paste("Base model BIC:", model.bic.vec[as.character(gp.obj$model.tree)]))
 
@@ -78,6 +83,17 @@ bic.model.search <- function(x, y, base.model.tree, plot.gp=FALSE, reset.params=
     bic.improved <- FALSE
     next.models <- generate.next.models(best.model)
 
+    duplicate.models <- numeric(0)
+
+    for (i in seq_along(next.models)) {
+      if (as.character(next.models[[i]]) %in% evaluated.models) {
+        duplicate.models <- c(duplicate.models, i)
+      }
+    }
+    if (length(duplicate.models) > 0) {
+      next.models <- next.models[-duplicate.models]
+    }
+
     for (i in 1:length(next.models)) {
       for (reset in reset.vec) {
         current.model <- clone.env(next.models[[i]])
@@ -98,6 +114,7 @@ bic.model.search <- function(x, y, base.model.tree, plot.gp=FALSE, reset.params=
         if (result["convcode"] == 0) {
           model.bic <- bayesian.information.criterion(gp.obj)
           model.bic.vec[paste(as.character(gp.obj$model.tree), as.character(reset), sep=".")] <- model.bic
+          evaluated.models <- c(evaluated.models, as.character(gp.obj$model.tree))
           print(paste("Model:", as.character(gp.obj$model.tree)))
           print(paste("Model BIC:", model.bic))
           print("Model hyperparams:")
