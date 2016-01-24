@@ -514,6 +514,8 @@ insert.kernel.instance <- function(orig.model.tree,
 }
 
 generate.next.models <- function(model.tree) {
+
+  # Generate a list of models
   models <- list()
   i <- 1
   if (nrow(model.tree$tree) == 0) {
@@ -537,6 +539,18 @@ generate.next.models <- function(model.tree) {
       }
     }
   }
+
+  # Reduce to canonical form and dedupe
+
+  model.strings <- character(length(models))
+  for (i in seq_along(models)) {
+    model.strings[i] <- reduce.to.canonical.tree(models[[i]])
+  }
+
+  duplicates <- which(duplicated(model.strings))
+
+  models <- models[-duplicates]
+
   return(models)
 }
 
@@ -639,8 +653,212 @@ create.model.tree.builtin <- function() {
   return(mt)
 }
 
+###############################################################################
+#                       .     _///_,
+#                     .      / ` ' '>
+#                       )   o'  __/_'>
+#                      (   /  _/  )_\'>
+#                       ' "__/   /_/\_>
+#                           ____/_/_/_/
+#                          /,---, _/ /
+#                         ""  /_/_/_/
+#                            /_(_(_(_                 \
+#                           (   \_\_\\_               )\
+#                            \'__\_\_\_\__            ).\
+#                            //____|___\__)           )_/
+#                            |  _  \'___'_(           /'
+#                             \_ (-'\'___'_\      __,'_'
+#                             __) \  \\___(_   __/.__,'
+#                          ,((,-,__\  '", __\_/. __,'
+#                                       '"./_._._-'
+#
+#
+#
+#         HERE BE DRAGONS - The following code does not follow the
+#                           R convention of pure functions with no
+#                           side effects. They modify ModelTree
+#                           objects in place. Use or modify at your
+#                           own peril.
+#
+###############################################################################
+
+
+check.node.is.in.canonical.form <- function(model.tree, node) {
+  is.canonical <- TRUE
+
+  node.row <- model.tree$tree[node, ]
+
+  # If this is a terminal (non-operation) node then it is canonical. If not...
+  if (!is.na(node.row$operationID)) {
+    # check left daughter operation does not match this node's
+    if (!identical(model.tree$tree[node.row$leftDaughter, "operationID"], node.row$operationID)) {
+      is.canonical <- FALSE
+    } else {
+      # check the left daughter of this node is smaller than the left daughter of it's right daughter,
+      # if they are the same type of operation
+      right.daughter.node.row <- model.tree$tree[node.row$rightDaughter, ]
+      if (identical(right.daughter.node.row$operationID, node.row$operationID)) {
+        right.daughters.left.daughter.string <- node.to.string(right.daughter.node.row$leftDaughter)
+        left.daughter.string <- node.to.string(node.row$leftDaughter)
+        if (right.daughters.left.daughter.string < left.daughter.string) {
+          is.canonical <- FALSE
+        }
+      }
+    }
+  }
+  return(is.canonical)
+}
+
+block.of.ops.is.stretched <- function(model.tree, node, operationID) {
+  node.row <- model.tree$tree[node, ]
+
+  if (is.na(operationID)) {
+    return(TRUE)
+  }
+
+  if (identical(operationID, node.row$operationID)){
+    left.daughter.op <- model.tree$tree[node.row$leftDaughter, "operationID"]
+    if (identical(operationID, left.daughter.op)) {
+      return(FALSE)
+    } else {
+      return(block.of.ops.is.stretched(model.tree, node.row$rightDaughter, operationID))
+    }
+  } else {
+    return(TRUE)
+  }
+}
+
+find.block.terminal.node <- function(model.tree, node, operationID) {
+  tree <- model.tree$tree
+  node.row <- tree[node,]
+  if (!identical(node.row$operationID, operationID)) {
+    stop("block root node is not of the specified operation")
+  }
+  current.node <- node
+  next.node <- tree[current.node, "rightDaughter"]
+  while (identical(tree[next.node, "operationID"], operationID)) {
+    current.node <- next.node
+    next.node <- tree[next.node, "rightDaughter"]
+  }
+  return(current.node)
+}
+
+stretch.block <- function(model.tree, node, operationID) {
+  node.row <- model.tree$tree[node,]
+  if (!identical(node.row$operationID, operationID)) {
+    stop("block root node is not of the specified operation")
+  }
+  current.node <- node
+  terminal.node <- find.block.terminal.node(model.tree, current.node, operationID)
+  while (identical(model.tree$tree[current.node, "operationID"], operationID)) {
+    left.daughter <- model.tree$tree[current.node, "leftDaughter"]
+    if (identical(model.tree$tree[left.daughter, "operationID"], operationID)) {
+      # We need a non-matching op as left daughter, so we'll swap the left
+      # daughter with the right daughter of the terminal node
+      terminal.node.right.daughter <- model.tree$tree[terminal.node, "rightDaughter"]
+      model.tree$tree[current.node, "leftDaughter"] <- terminal.node.right.daughter
+      model.tree$tree[terminal.node, "rightDaughter"] <- left.daughter
+
+      # Now we'll have a new terminal node, so let's go find it
+      terminal.node <- find.block.terminal.node(model.tree, current.node, operationID)
+    }
+
+    # We're done with this node, so let's move on.
+    current.node <- model.tree$tree[current.node, "rightDaughter"]
+  }
+}
+
+stretch.tree <- function(model.tree) {
+  root.node <- find.root.node(model.tree)
+  node.queue <- c(root.node)
+  while (length(node.queue) > 0) {
+    #Pop off of the front of our wildly inefficient "queue"
+    current.node <- node.queue[1]
+    node.queue <- node.queue[-1]
+
+    current.op <- model.tree$tree[current.node, "operationID"]
+
+    if (!block.of.ops.is.stretched(model.tree, current.node, current.op)) {
+      stretch.block(model.tree, current.node, current.op)
+    }
+
+    if (!is.na(current.op)) {
+      node.queue <- c(node.queue, as.numeric(model.tree$tree[current.node, c("leftDaughter", "rightDaughter")]))
+    }
+  }
+}
+
+order.and.return.string <- function(model.tree, node) {
+  # We assume the tree has been stretched i.e. commutable operations proceed
+  # in blocks down the right daughters
+  node.op <- model.tree$tree[node, "operationID"]
+  if (!is.na(node.op)) {
+    left.daughter <- model.tree$tree[node, "leftDaughter"]
+    right.daughter <- model.tree$tree[node, "rightDaughter"]
+    right.daughter.op <- model.tree$tree[right.daughter, "operationID"]
+    if (!identical(right.daughter.op, node.op)) {
+      # Terminal string of a block - get strings and re-order if necessary
+      left.daughter.string <- order.and.return.string(model.tree, left.daughter)
+      right.daughter.string <- order.and.return.string(model.tree, right.daughter)
+      if (left.daughter.string > right.daughter.string) {
+        model.tree$tree[node, "leftDaughter"] <- right.daughter
+        model.tree$tree[node, "rightDaughter"] <- left.daughter
+      }
+    } else {
+      # We're in a block of ops - need to look at the ops around us.
+      # If we're in a block then "node" must be the root node of the
+      # block, since we never call this function on right daughters in
+      # the block.
+
+      # Get the block's left daughter strings
+      current.block.node <- node
+      block.nodes <- c()
+      block.left.daughters <- c()
+      block.left.daughter.strings <- c()
+      while (identical(model.tree$tree[current.block.node, "operationID"], node.op)) {
+        block.nodes <- c(block.nodes, current.block.node)
+        block.left.daughter <- model.tree$tree[current.block.node, "leftDaughter"]
+        block.left.daughters <- c(block.left.daughters, block.left.daughter)
+        block.left.daughter.strings <- c(block.left.daughter.strings,
+                                         order.and.return.string(model.tree,
+                                                                 block.left.daughter))
+        current.block.node <- model.tree$tree[current.block.node, "rightDaughter"]
+      }
+
+      # current.block.node now contains the right daughter of the terminal node -
+      # we need to include this in the ordering
+      terminal.right.daughter <- current.block.node
+      block.left.daughters <- c(block.left.daughters, terminal.right.daughter)
+      block.left.daughter.strings <- c(block.left.daughter.strings,
+                                       order.and.return.string(model.tree,
+                                                               terminal.right.daughter))
+
+      correct.daughter.order <- order(block.left.daughter.strings)
+      ordered.daughters <- block.left.daughters[correct.daughter.order]
+      for (block.node.index in seq_along(block.nodes)) {
+        block.node <- block.nodes[block.node.index]
+        new.left.daughter <- ordered.daughters[block.node.index]
+        model.tree$tree[block.node, "leftDaughter"] <- new.left.daughter
+      }
+
+      # Now we update the right daughter of the terminal node
+      block.node <- tail(block.nodes, 1)
+      new.right.daughter <- tail(ordered.daughters, 1)
+      model.tree$tree[block.node, "rightDaughter"] <- new.right.daughter
+    }
+  }
+  return(node.to.string(model.tree, node, show.node.ids=FALSE))
+}
+
+order.tree <- function(model.tree) {
+  root.node <- find.root.node(model.tree)
+  model.string <- order.and.return.string(model.tree, root.node)
+  return(model.string)
+}
+
 reduce.to.canonical.tree <- function(model.tree) {
-  # kernel instances are ordered lexicographically by ID.
-  # First, any products are multiplied out so (a + b) * c becomes a * c + b * c,
-  # a * (b + c) become a * b + a * c, and
+  # First we stretch the tree, then we order it.
+  stretch.tree(model.tree)
+  model.string <- order.tree(model.tree)
+  return(model.string)
 }
