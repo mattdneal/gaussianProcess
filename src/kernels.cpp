@@ -385,19 +385,11 @@ NumericVector randomForestKernel(NumericVector a,
   const char forestName[] = "forest";
   const char heightsName[] = "heights";
   const char isFactorName[] = "isFactor";
-  const char cacheName[] = "cache";
-
-  bool caching = false;
 
   List forest = additionalParams[forestName];
   NumericVector heights = additionalParams[heightsName];
   IntegerVector isFactor = additionalParams[isFactorName];
   double numTrees = forest.length();
-
-  if (additionalParams.containsElementNamed(cacheName)) {
-    caching = true;
-    List cache = additionalParams[cacheName];
-  }
 
   for (int i=0; i<numTrees; i++) {
     NumericVector height = NumericVector::create(heights[i]);
