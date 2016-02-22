@@ -4,8 +4,7 @@
 \alias{add.kernel}
 \title{Add a Kernel Class to a Model Tree}
 \usage{
-add.kernel(orig.model.tree, kernel.class.name, kernel, hyper.param.names,
-  kernel.additional.params = list(), kernel.grad = NULL)
+add.kernel(orig.model.tree, kernel.class.name, kernel)
 }
 \arguments{
 \item{orig.model.tree}{a ModelTree object}

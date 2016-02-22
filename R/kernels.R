@@ -77,46 +77,6 @@ test.kernel.grad <- function(k, k.grad, hyper.param.names, additional.params, re
   return(TRUE)
 }
 
-squared.exponential.kernel.ard <- function(a, b, hyper.params) {
-  l <- hyper.params[-1]
-  if (length(l) != length(a)) {
-    stop("Not enough length hyperparameters.")
-  }
-  return(as.numeric(hyper.params["sigma"]^2 * exp(-1/2 * sum(((a - b) / l)^2))))
-}
-
-squared.exponential.kernel.ard.grad <- function(a, b, hyper.params) {
-  print("grad called")
-  l <- hyper.params[-1]
-  if (length(l) != length(a)) {
-    stop("Not enough length hyperparameters.")
-  }
-
-  precalc.exp <- as.numeric(hyper.params["sigma"] * exp(-1/2 * sum(((a - b) / l)^2)))
-
-  ret <- c(sigma=as.numeric(2 * precalc.exp))
-
-  #for (i in 2:length(hyper.params)) {
-  #  ret <- c(ret,
-  #           as.numeric(((a[i-1] - b[i-1])^2)/(hyper.params[i]^3) *
-  #                        hyper.params["sigma"] *
-  #                        precalc.exp)
-  #           )
-  #  if (i%%1000==0) print(i)
-  #}
-
-  ret <- c(ret,
-           as.numeric(((a - b)^2)/(l^3) *
-                        hyper.params["sigma"] *
-                        precalc.exp
-           )
-  )
-
-  names(ret) <- names(hyper.params)
-
-  return(ret)
-}
-
 #' Random Partition Kernel
 #'
 #' Takes a partition function and returns the covariance between two points
@@ -171,4 +131,92 @@ random.forest.partition.function.generator <- function(rf) {
       return(ret)
     }
   }
+}
+
+#' Create a kernel object
+#'
+#' Kernel objects provide a unifying wrapper for the various things which
+#' can act as kernels (built-in kernels (represented by strings), model trees,
+#' and arbitrary R functions).
+#'
+#' @param kernel_function the kernel function (either a string, a function,
+#' or a ModelTree)
+#' @param grad_function if \code{kernel_function} is a function, then this
+#' should be a function returning the grad w.r.t. the hyperparameters,
+#' otherwise this should be null
+#' @param hyperparam_names A character vector of the names of the hyperparameters
+#' @param additional_params A list of additional parameters
+#'
+#' @return A Kernel object
+#' @export
+create.kernel.object <- function(kernel, grad_function=NULL,
+                                 hyperparam_names=character(0),
+                                 additional_params=list()) {
+  kernel_obj <- list()
+  kernel_obj$kernel <- kernel
+
+  if (!is.null(grad_function) & !is.function(kernel)) {
+    stop("grad_function is not null, but kernel is not a function.")
+  }
+
+  if (is.null(grad_function)) {
+    if (is.character(kernel)) {
+      # Built-in kernel
+      kernel_obj$grad <- kernel
+    } else {
+      # No grad supplied. Make a grad.
+      kernel_obj$grad <- create.numeric.grad(kernel)
+    }
+  } else {
+    # Grad supplied.
+    kernel_obj$grad <- grad_function
+  }
+
+  if (length(hyperparam_names) == 0) {
+    hyperparam_names <- character(0)
+  }
+
+  kernel_obj$hyperparam_names <- hyperparam_names
+
+  kernel_obj$additional_params <- additional_params
+  class(kernel_obj) <- "Kernel"
+  return(kernel_obj)
+}
+
+#' Print a kernel
+#'
+#' @param kernel
+#'
+#' @return NULL
+#' @export
+print.Kernel <- function(kernel) {
+  if (is.character(kernel$kernel)) {
+    cat(paste('  - Built-in kernel: ', kernel$kernel, '\n', sep=""))
+  }
+  if (length(kernel$hyperparam_names) > 0) {
+    cat(paste('  - Hyperparameters:\n', sep=""))
+    for (param in kernel$hyperparam_names) {
+      cat(paste('    - ', param, '\n', sep=""))
+    }
+  } else {
+    cat(paste('  - No hyperparameters\n', sep=""))
+  }
+  if (length(kernel$additional_params) > 0) {
+    cat(paste('  - Additional Parameters:\n', sep=""))
+    for (addparam in names(kernel$additional_params)) {
+      cat(paste('    - ', addparam, '\n', sep=""))
+    }
+  }else {
+    cat(paste('  - No additional parameters \n', sep=""))
+  }
+}
+
+create.kernel.object.from.model.tree <- function(model_tree) {
+  hyperparam_names <- names(model_tree$all.hyper.params)
+  kernel <- create.kernel.object(kernel=model_tree,
+                                 grad_function=NULL,
+                                 hyperparam_names=hyperparam_names,
+                                 additional_params=list()
+                                 )
+  return(kernel)
 }

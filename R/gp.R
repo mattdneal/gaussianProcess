@@ -1,4 +1,6 @@
 
+sigma.n.name <- "sigma.n"
+
 # By default generate up to 10^6, so that if we square the number we can
 # still add on a small sigma_n and not have it round off
 rplaw <- function(n, alpha, x_0=1, x_1=10^6) {
@@ -96,7 +98,10 @@ create.gaussian.process <- function(x, y, model.tree) {
       model.tree$all.hyper.params <<- hyper.params
 
       #Create the covariance matrix
-      cov.mat <- get.covariance.matrix.model.tree(training.points, model.tree, sigma.n)
+      cov.mat <- get_covariance_matrix.ModelTree(kernel=model.tree,
+                                                 x=training.points,
+                                                 sigma.n=sigma.n,
+                                                 hyper.params=hyper.params)
 
       #Store it in the enclosing environment
       cov.mat <<- cov.mat
@@ -130,12 +135,10 @@ create.gaussian.process <- function(x, y, model.tree) {
   gp.obj$get.marginal.likelihood.grad <- function(sigma.n, hyper.params) {
     train(sigma.n, hyper.params)
 
-    sigma.n.name <- "sigma.n"
-
-    cov.mat.grad.array <- get.covariance.matrix.grad.model.tree(training.points,
-                                                                model.tree,
-                                                                sigma.n
-    )
+    cov.mat.grad.array <- get_covariance_matrix_grad.ModelTree(kernel=model.tree,
+                                                               x=training.points,
+                                                               sigma.n=sigma.n,
+                                                               hyper.params=hyper.params)
 
     log.marginal.likelihood.grad <- numeric(length(hyper.params) + 1)
     names(log.marginal.likelihood.grad) <- c(sigma.n.name, names(hyper.params))
@@ -428,7 +431,10 @@ predict.GaussianProcess <- function(gp.obj, data) {
   kernel.func.list <- list()
   K.star.inst.list <- list()
 
-  K.star <- get.kstar.mat.model.tree(data, gp.obj$training.points, gp.obj$model.tree)
+  K.star <- get_kstar_matrix.ModelTree(kernel=gp.obj$model.tree,
+                                       data.to.predict=data,
+                                       training.data=gp.obj$training.points,
+                                       hyper.params=gp.obj$model.tree$all.hyper.params)
 
   pred.out <- list()
   pred.out[["mean"]] <- K.star %*% gp.obj$alpha
@@ -438,7 +444,11 @@ predict.GaussianProcess <- function(gp.obj, data) {
   for (i in seq(num.data.points)) {
     v <- gp.obj$cov.mat.L.inv %*% t(K.star[i, , drop=F])
     invalidate.cache(gp.obj$model.tree)
-    pred.out$var[i, 1] <- get.covariance.matrix.model.tree(data[i, , drop=FALSE], gp.obj$model.tree, 0) - t(v) %*% v
+    pred.out$var[i, 1] <- (get_covariance_matrix.ModelTree(kernel=gp.obj$model.tree,
+                                                          x=data[i, , drop=FALSE],
+                                                          sigma.n=0,
+                                                          hyper.params=gp.obj$model.tree$all.hyper.params)
+                           - t(v) %*% v)
   }
 
   return(pred.out)

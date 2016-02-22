@@ -84,105 +84,6 @@ eval.cov.mat.grad.node <- function(model.tree, inst.cov.mats, inst.cov.mat.grads
 }
 
 
-#' Get the Covariance Matrix for a Kernel
-#'
-#' @param x A matrix of data to find the covariance matrix of
-#' @param k A kernel function
-#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
-#' @param hyper.params The hyperparameters of \code{k}
-#' @param additional.params Any additional parameters of \code{k}
-#'
-#' @return A covariance matrix
-get.covariance.matrix.kernel <- function(x, k, sigma.n, hyper.params, additional.params) {
-
-  if (is.character(k)) {
-    # Make sure we pass a vector if there are no hyper params
-    if (length(hyper.params) == 0) {
-      hyper.params <- numeric()
-    }
-    return(getCovarianceMatrixBuiltInCpp(x, k, sigma.n, hyper.params, additional.params))
-
-  } else {
-
-    num.training.points <- nrow(x)
-    if (is.null(num.training.points)) {
-      num.training.points <- length(x)
-      x <- matrix(x, nrow=num.training.points)
-    }
-
-    cov.mat <- matrix(NA, nrow=num.training.points, ncol=num.training.points)
-    for (sample.1 in 1:num.training.points) {
-      for (sample.2 in 1:sample.1) {
-        cov.mat[sample.1, sample.2] <- cov.mat[sample.2, sample.1] <-
-          k(x[sample.1,], x[sample.2,], hyper.params, additional.params)
-      }
-    }
-    diag(cov.mat) <- diag(cov.mat) + sigma.n^2
-    return(cov.mat)
-
-  }
-}
-
-
-#' Get the Covariance Matrix Grad for a Kernel
-#'
-#' @param x A matrix of data to find the covariance matrix of
-#' @param kernel.grad A function returning the grad of a kernel (as a named vector)
-#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
-#' @param hyper.params The hyperparameters of \code{kernel.grad}
-#' @param additional.params Any additional parameters of \code{kernel.grad}
-#'
-#' @return A covariance matrix grad (as an array)
-get.covariance.matrix.grad.kernel <- function(x, kernel.grad, sigma.n, hyper.params, additional.params) {
-
-  sigma.n.name <- "sigma.n"
-
-  if (is.character(kernel.grad)) {
-    # Make sure we pass a vector if there are no hyper params
-    if (length(hyper.params) == 0) {
-      hyper.params <- numeric()
-    }
-    # use the C++ function for built-in kernels
-    cov.mat.grad.array <- getCovarianceMatrixGradArray(x,
-                                                       kernel.grad,
-                                                       sigma.n,
-                                                       hyper.params,
-                                                       additional.params
-    )
-
-  } else {
-    # Do the R thing
-    num.training.points <- nrow(x)
-
-    cov.mat.grad.array <- array(0, c(num.training.points,
-                                     num.training.points,
-                                     length(hyper.params) + 1)
-    )
-
-
-    cov.mat.grad.array[,,1] <- diag(2 * sigma.n, nrow=num.training.points)
-    if (length(hyper.params) > 0) {
-      for (sample.1 in 1:num.training.points) {
-        for (sample.2 in 1:sample.1) {
-          temp.grad <- kernel.grad(x[sample.1,], x[sample.2,], hyper.params, additional.params)
-          cov.mat.grad.array[sample.1, sample.2, -1] <-
-            cov.mat.grad.array[sample.2, sample.1, -1] <-
-            temp.grad
-        }
-      }
-    }
-  }
-
-  dimnames(cov.mat.grad.array) <- list(NULL,
-                                       NULL,
-                                       c(sigma.n.name,
-                                         names(hyper.params)
-                                       )
-  )
-  return(cov.mat.grad.array)
-}
-
-
 #' Get Kernel Instance Covariance Matrices or Grads
 #'
 #' Calculates the covariance matrices (or associated grads) for the kernel instances appearing in a model tree
@@ -199,6 +100,22 @@ get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
   hyper.param.cache.check(model.tree)
 
   for (inst.id in rownames(model.tree$kernel.instances)) {
+
+    kernel.class <- model.tree$kernel.instances[inst.id, "kernelClassName"]
+    kernel <- model.tree$kernel.objects[[kernel.class]]
+    kernel.hyper.param.indices <- model.tree$kernel.inst.hyper.param.indices[[inst.id]]
+    kernel.hyper.params <- model.tree$all.hyper.params[kernel.hyper.param.indices]
+    model.tree.hp.names <- paste(inst.id, kernel$hyperparam_names, sep="#")
+    if (length(kernel$hyperparam_names) > 0 & !all(model.tree.hp.names %in% names(kernel.hyper.params))) {
+      stop(paste("Hyperparameter names not as expected. Expected: ",
+                 paste(model.tree.hp.names, collapse="; "),
+                 "Actual: ",
+                 paste(names(kernel.hyper.params), collapse="; "),
+                 sep=""))
+    }
+    kernel.hyper.params <- kernel.hyper.params[model.tree.hp.names]
+    names(kernel.hyper.params) <- kernel$hyperparam_names
+
     if (return.grad) {
       # Set up a full array for all of the hyperparameters in the model
       num.training.points <- nrow(x)
@@ -207,17 +124,6 @@ get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
                                        num.training.points,
                                        length(model.tree$all.hyper.params) + 1)
       )
-    }
-    kernel.class <- model.tree$kernel.instances[inst.id, "kernelClassName"]
-    kernel <- model.tree$kernel.class.functions[[kernel.class]]
-    kernel.hyper.param.indices <- model.tree$kernel.inst.hyper.param.indices[[inst.id]]
-    kernel.hyper.param.names <- model.tree$kernel.class.hyper.param.names[[kernel.class]]
-    kernel.hyper.params <- model.tree$all.hyper.params[kernel.hyper.param.indices]
-    kernel.additional.params <- model.tree$kernel.class.additional.params[[kernel.class]]
-    if (!is.null(kernel.hyper.param.names)) {
-      names(kernel.hyper.params) <- kernel.hyper.param.names
-    }
-    if (return.grad) {
 
       # Only update the hyperparameters which are used for this kernel.
       if (length(kernel.hyper.param.indices) > 0) {
@@ -227,11 +133,10 @@ get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
           inst.grad.array <- model.tree$cache[[icmg.cache.name]][[inst.id]]
         } else {
           inst.grad.array <-
-            get.covariance.matrix.grad.kernel(x,
-                                              kernel,
-                                              0,
-                                              kernel.hyper.params,
-                                              kernel.additional.params)[, , -1]
+            get_covariance_matrix_grad(kernel,
+                                       x,
+                                       0,
+                                       kernel.hyper.params)[, , -1]
 
           model.tree$cache[[icmg.cache.name]][[inst.id]] <- inst.grad.array
         }
@@ -246,11 +151,10 @@ get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
         inst.cov.mats[[inst.id]] <- model.tree$cache[[icm.cache.name]][[inst.id]]
       } else {
         inst.cov.mats[[inst.id]] <-
-          get.covariance.matrix.kernel(x,
-                                       kernel,
-                                       0,
-                                       kernel.hyper.params,
-                                       kernel.additional.params)
+          get_covariance_matrix(kernel,
+                                x,
+                                0,
+                                kernel.hyper.params)
 
         model.tree$cache[[icm.cache.name]][[inst.id]] <- inst.cov.mats[[inst.id]]
       }
@@ -261,26 +165,52 @@ get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
 }
 
 
-#' Covariance Matrix of a Model Tree
+#' Get the Covariance Matrix for a Kernel
 #'
-#' Calculates the covariance matrix for a modelTree object
-#'
-#' @param x A numeric matrix
-#' @param model.tree A modelTree object
+#' @param kernel A Kernel object
+#' @param x A matrix of data to find the covariance matrix of
 #' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
-#'
+#' @param hyper.params The hyperparameters of \code{kernel}
+#' @param additional.params Any additional parameters of \code{kernel} (internal use only)
 #'
 #' @return A covariance matrix
 #' @export
+get_covariance_matrix <- function(kernel, x, sigma.n, hyper.params,  ...) UseMethod("get_covariance_matrix")
+
+#' Get the Covariance Matrix for a Kernel
 #'
-#' @examples
-#' mt <- create.model.tree.builtin()
-#' mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
+#' @param kernel A Kernel object
+#' @param x A matrix of data to find the covariance matrix of
+#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#' @param hyper.params The hyperparameters of \code{kernel}
+#' @param additional.params Any additional parameters of \code{kernel} (internal use only)
 #'
-#' x <- rnorm(50)
+#' @return A covariance matrix
+#' @export
+get_covariance_matrix.Kernel <- function(kernel, x, sigma.n, hyper.params) {
+  k <- kernel$kernel
+  additional.params <- kernel$additional_params
+  return(get_covariance_matrix(kernel=k,
+                               x=x,
+                               sigma.n=sigma.n,
+                               hyper.params=hyper.params,
+                               additional.params=additional.params))
+}
+
+#' Get the Covariance Matrix for a Kernel ModelTree
 #'
-#' cov.mat <- get.covariance.matrix.model.tree(x, mt, sigma.n=0.1)
-get.covariance.matrix.model.tree <- function(x, model.tree, sigma.n) {
+#' @param kernel A ModelTree object
+#' @param x A matrix of data to find the covariance matrix of
+#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#' @param hyper.params The hyperparameters of \code{kernel}
+#' @param additional.params an empty list (not used for ModelTree objects)
+#'
+#' @return A covariance matrix
+#' @export
+
+get_covariance_matrix.ModelTree <- function(kernel, x, sigma.n, hyper.params, additional.params=list()) {
+  model.tree <- kernel
+  model.tree$all.hyper.params <- hyper.params
 
   inst.cov.mats <- get.inst.cov.mats(x, model.tree, return.grad=FALSE)
 
@@ -291,34 +221,109 @@ get.covariance.matrix.model.tree <- function(x, model.tree, sigma.n) {
   diag(cov.mat) <- diag(cov.mat) + sigma.n^2
 
   return(cov.mat)
-
 }
 
-
-#' Covariance Matrix Grad of a Model Tree
+#' Get the Covariance Matrix for a built-in kernel
 #'
-#' Calculates the covariance matrix grad for a modelTree object
-#'
-#' @param x A numeric matrix
-#' @param model.tree A modelTree object
+#' @param kernel A string
+#' @param x A matrix of data to find the covariance matrix of
 #' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#' @param hyper.params The hyperparameters of \code{kernel}
+#' @param additional.params Any additional parameters of \code{kernel} (internal use only)
 #'
-#' @return An array containing the covariance matrix grad.
+#' @return A covariance matrix
 #' @export
+get_covariance_matrix.character <- function(kernel, x, sigma.n, hyper.params, additional.params) {
+  if (length(hyper.params) == 0) {
+    hyper.params <- numeric(0)
+  }
+  return(getCovarianceMatrixBuiltInCpp(x, kernel, sigma.n, hyper.params, additional.params))
+}
+
+#' Get the Covariance Matrix for a kernel function
 #'
-#' @examples
-#' mt <- create.model.tree.builtin()
-#' mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
+#' @param kernel A kernel function
+#' @param x A matrix of data to find the covariance matrix of
+#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#' @param hyper.params The hyperparameters of \code{kernel}
+#' @param additional.params Any additional parameters of \code{kernel} (internal use only)
 #'
-#' x <- rnorm(50)
+#' @return A covariance matrix
+#' @export
+get_covariance_matrix.function <- function(kernel, x, sigma.n, hyper.params, additional.params) {
+
+  if (length(hyper.params) == 0) {
+    hyper.params <- numeric(0)
+  }
+
+  num.training.points <- nrow(x)
+  if (is.null(num.training.points)) {
+    num.training.points <- length(x)
+    x <- matrix(x, nrow=num.training.points)
+  }
+
+  cov.mat <- matrix(NA, nrow=num.training.points, ncol=num.training.points)
+  for (sample.1 in 1:num.training.points) {
+    for (sample.2 in 1:sample.1) {
+      cov.mat[sample.1, sample.2] <- cov.mat[sample.2, sample.1] <-
+        kernel(x[sample.1,], x[sample.2,], hyper.params, additional.params)
+    }
+  }
+
+  diag(cov.mat) <- diag(cov.mat) + sigma.n^2
+
+  return(cov.mat)
+}
+
+get_covariance_matrix_grad <- function(kernel, x, sigma.n, hyper.params,  ...) UseMethod("get_covariance_matrix_grad")
+
+
+#' Get the Covariance Matrix Grad for a Kernel
 #'
-#' cov.mat <- get.covariance.matrix.model.tree(x, mt, sigma.n=0.1)
-get.covariance.matrix.grad.model.tree <- function(x, model.tree, sigma.n) {
+#' @param kernel A Kernel object
+#' @param x A matrix of data to find the covariance matrix grad of
+#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#' @param hyper.params The hyperparameters of \code{kernel}
+#' @param additional.params Any additional parameters of \code{kernel} (internal use only)
+#'
+#' @return A covariance matrix
+#' @export
+get_covariance_matrix_grad.Kernel <- function(kernel, x, sigma.n, hyper.params) {
+  k <- kernel$kernel
+  k.grad <- kernel$grad
+  additional.params <- kernel$additional_params
+  return(get_covariance_matrix_grad(kernel=k,
+                                    kernel.grad=k.grad,
+                                    x=x,
+                                    sigma.n=sigma.n,
+                                    hyper.params=hyper.params,
+                                    additional.params=additional.params))
+}
+
+#' Get the Covariance Matrix Grad for a Kernel ModelTree
+#'
+#' @param kernel A ModelTree object
+#' @param kernel.grad Not used for ModelTree objects
+#' @param x A matrix of data to find the covariance matrix grad of
+#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#' @param hyper.params The hyperparameters of \code{kernel}
+#' @param additional.params an empty list (not used for ModelTree objects)
+#'
+#' @return A covariance matrix
+#' @export
+
+get_covariance_matrix_grad.ModelTree <- function(kernel,
+                                                 kernel.grad=NULL,
+                                                 x,
+                                                 sigma.n,
+                                                 hyper.params,
+                                                 additional.params=list()) {
+  model.tree <- kernel
+  model.tree$all.hyper.params <- hyper.params
+
   sigma.n.name <- "sigma.n"
   num.training.points <- nrow(x)
 
-  # Since we're doing this twice it would be good to build a cache for the
-  # covariance matrices
   inst.cov.mats <- get.inst.cov.mats(x, model.tree, return.grad=FALSE)
   inst.cov.mat.grads <- get.inst.cov.mats(x, model.tree, return.grad=TRUE)
 
@@ -336,12 +341,125 @@ get.covariance.matrix.grad.model.tree <- function(x, model.tree, sigma.n) {
   )
 
   return(cov.mat.grad)
+}
+
+#' Get the Covariance Matrix grad for a built-in kernel
+#'
+#' @param kernel A string
+#' @param kernel.grad Not used for built in kernels
+#' @param x A matrix of data to find the covariance matrix of
+#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#' @param hyper.params The hyperparameters of \code{kernel}
+#' @param additional.params Any additional parameters of \code{kernel} (internal use only)
+#'
+#' @return A covariance matrix
+#' @export
+get_covariance_matrix_grad.character <- function(kernel,
+                                                 kernel.grad=NULL,
+                                                 x,
+                                                 sigma.n,
+                                                 hyper.params,
+                                                 additional.params) {
+  # Make sure we pass a vector if there are no hyper params
+  if (length(hyper.params) == 0) {
+    hyper.params <- numeric(0)
+  }
+
+  # use the C++ function for built-in kernels
+  cov.mat.grad.array <- getCovarianceMatrixGradArray(x,
+                                                     kernel,
+                                                     sigma.n,
+                                                     hyper.params,
+                                                     additional.params
+  )
+
+  dimnames(cov.mat.grad.array) <- list(NULL,
+                                       NULL,
+                                       c(sigma.n.name,
+                                         names(hyper.params)
+                                       )
+  )
+
+  return(cov.mat.grad.array)
+}
+
+#' Get the Covariance Matrix grad for a kernel function
+#'
+#' @param kernel A kernel function
+#' @param kernel.grad A grad function for \code{kernel}
+#' @param x A matrix of data to find the covariance matrix grad of
+#' @param sigma.n The standard deviation of the noise to add to the kernel - used to regularise the resulting covariance matrix
+#' @param hyper.params The hyperparameters of \code{kernel}
+#' @param additional.params Any additional parameters of \code{kernel} (internal use only)
+#'
+#' @return A covariance matrix
+#' @export
+get_covariance_matrix_grad.function <- function(kernel,
+                                                kernel.grad,
+                                                x,
+                                                sigma.n,
+                                                hyper.params,
+                                                additional.params) {
+
+  # Do the R thing
+  num.training.points <- nrow(x)
+
+  cov.mat.grad.array <- array(0, c(num.training.points,
+                                   num.training.points,
+                                   length(hyper.params) + 1)
+  )
+
+
+  cov.mat.grad.array[,,1] <- diag(2 * sigma.n, nrow=num.training.points)
+  if (length(hyper.params) > 0) {
+    for (sample.1 in 1:num.training.points) {
+      for (sample.2 in 1:sample.1) {
+        temp.grad <- kernel.grad(x[sample.1,], x[sample.2,], hyper.params, additional.params)
+        cov.mat.grad.array[sample.1, sample.2, -1] <-
+          cov.mat.grad.array[sample.2, sample.1, -1] <-
+          temp.grad
+      }
+    }
+  }
+
+  dimnames(cov.mat.grad.array) <- list(NULL,
+                                       NULL,
+                                       c(sigma.n.name,
+                                         names(hyper.params)
+                                       )
+  )
+
+  return(cov.mat.grad.array)
 
 }
 
+get_kstar_matrix <- function(kernel,
+                             data.to.predict,
+                             training.data,
+                             hyper.params,
+                             ...) {
+  UseMethod("get_kstar_matrix")
+}
+
+
+get_kstar_matrix.Kernel <- function(kernel,
+                             data.to.predict,
+                             training.data,
+                             hyper.params) {
+
+  k <- kernel$kernel
+  additional.params <- kernel$additional_params
+  return(get_kstar_matrix(kernel=k,
+                          data.to.predict=data.to.predict,
+                          training.data=training.data,
+                          hyper.params=hyper.params,
+                          additional.params=additional.params))
+
+}
 #' Get predictive K* matrix
 #'
-#' This function returns the K* matrix of covariances between the training data and the data to predict.
+#' This function returns the K* matrix of covariances between the
+#' training data and the data to predict for an R function
 #'
 #' @param data.to.predict numeric matrix of data to predict
 #' @param training.data the data used to train the Gaussian process
@@ -351,16 +469,14 @@ get.covariance.matrix.grad.model.tree <- function(x, model.tree, sigma.n) {
 #'
 #' @return a numeric matrix
 #' @export
-get.kstar.mat.kernel <- function(data.to.predict, training.data, k, hyper.params, additional.params) {
+get_kstar_matrix.function <- function(kernel,
+                                      data.to.predict,
+                                      training.data,
+                                      hyper.params,
+                                      additional.params) {
 
   num.data.points <- nrow(data.to.predict)
   num.training.points <- nrow(training.data)
-
-  if (is.character(k)) {
-    kernel <- function(a, b, hyper.params, additional.params) callKernelByString(k, a, b, hyper.params, additional.params)
-  } else {
-    kernel <- k
-  }
 
   K.star <- matrix(NA, nrow=num.data.points, ncol=num.training.points)
 
@@ -375,6 +491,42 @@ get.kstar.mat.kernel <- function(data.to.predict, training.data, k, hyper.params
 
   return(K.star)
 }
+
+#' Get predictive K* matrix
+#'
+#' This function returns the K* matrix of covariances between the
+#' training data and the data to predict for a built-in kernel
+#'
+#' @param kernel the kernel function
+#' @param data.to.predict numeric matrix of data to predict
+#' @param training.data the data used to train the Gaussian process
+#' @param hyper.params the kernel's hyperparameters
+#' @param additional.params the kernel's additional parameters
+#'
+#' @return a numeric matrix
+#' @export
+get_kstar_matrix.character <- function(kernel,
+                                       data.to.predict,
+                                       training.data,
+                                       hyper.params,
+                                       additional.params) {
+
+  kernel_fun <- function(a,
+                         b,
+                         hyper.params,
+                         additional.params) {
+    callKernelByString(kernel, a, b, hyper.params, additional.params)
+  }
+
+  K.star <- get_kstar_matrix(kernel_fun,
+                             data.to.predict,
+                             training.data,
+                             hyper.params,
+                             additional.params)
+
+  return(K.star)
+}
+
 
 #' K* matrix of a model tree node
 #'
@@ -411,32 +563,50 @@ eval.node.kstar.mat <- function(model.tree, inst.kstar.mats, node) {
 #'
 #' Returns the K* matrix between training data and data to predict for a given modelTree object.
 #'
-#' @param data.to.predict a numeric matrix
-#' @param training.data a numeric matrix
-#' @param model.tree a modelTree object
+#' @param kernel a ModelTree object
+#' @param data.to.predict numeric matrix of data to predict
+#' @param training.data the data used to train the Gaussian process
+#' @param hyper.params the ModelTree's hyperparameters
+#' @param additional.params an empty list (not used for ModelTree objects)
 #'
 #' @return a numeric matrix
 #' @export
-get.kstar.mat.model.tree <- function(data.to.predict, training.data, model.tree) {
+get_kstar_matrix.ModelTree <- function(kernel,
+                                       data.to.predict,
+                                       training.data,
+                                       hyper.params,
+                                       additional.params=list()) {
 
   num.data.points <- nrow(data.to.predict)
   num.training.points <- nrow(training.data)
 
+  #We re-use kernel later - beware!
+  model.tree <- kernel
+
+  model.tree$all.hyper.params <- hyper.params
 
   inst.kstar.mats <- list()
 
   # Copy pasta from the code for inst cov matrices.
   for (inst.id in rownames(model.tree$kernel.instances)) {
     kernel.class <- model.tree$kernel.instances[inst.id, "kernelClassName"]
-    kernel <- model.tree$kernel.class.functions[[kernel.class]]
+    kernel <- model.tree$kernel.objects[[kernel.class]]
     kernel.hyper.param.indices <- model.tree$kernel.inst.hyper.param.indices[[inst.id]]
     kernel.hyper.params <- model.tree$all.hyper.params[kernel.hyper.param.indices]
-    kernel.additional.params <- model.tree$kernel.class.additional.params[[kernel.class]]
-    inst.kstar.mats[[inst.id]] <- get.kstar.mat.kernel(data.to.predict,
-                                                       training.data,
-                                                       kernel,
-                                                       kernel.hyper.params,
-                                                       kernel.additional.params)
+    model.tree.hp.names <- paste(inst.id, kernel$hyperparam_names, sep="#")
+    if (length(kernel$hyperparam_names) > 0 & !all(model.tree.hp.names %in% names(kernel.hyper.params))) {
+      stop(paste("Hyperparameter names not as expected. Expected: ",
+                 paste(model.tree.hp.names, collapse="; "),
+                 "Actual: ",
+                 paste(names(kernel.hyper.params), collapse="; "),
+                 sep=""))
+    }
+    kernel.hyper.params <- kernel.hyper.params[model.tree.hp.names]
+    names(kernel.hyper.params) <- kernel$hyperparam_names
+    inst.kstar.mats[[inst.id]] <- get_kstar_matrix.Kernel(kernel,
+                                                          data.to.predict,
+                                                          training.data,
+                                                          kernel.hyper.params)
   }
 
   root.node <- find.root.node(model.tree)

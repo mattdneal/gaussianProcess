@@ -28,9 +28,10 @@ bayesian.information.criterion <- function(gp.obj) {
 #' @param x A matrix or data frame of predictors
 #' @param y A numeric vector of responses
 #' @param base.model.tree The model tree at which the search starts
-#' @param plot.gp=FALSE Whether to plot the gaussian processes encountered during the search. If ncol(x) > 1 this parameter is ignored and no plots are created.
-#' @param reset.params=FALSE By default the search starts with the optimum hyperparameter values found in the previous step in the search (with new hyperparameters fitted from random start points). Setting this to TRUE causes all hyperparameters to be randomly set at each step.
-#' @param max.new.nodes=3 The number of kernel instances to add to the base model.
+#' @param plot.gp Whether to plot the gaussian processes encountered during the search. If ncol(x) > 1 this parameter is ignored and no plots are created.
+#' @param reset.params By default the search starts with the optimum hyperparameter values found in the previous step in the search (with new hyperparameters fitted from random start points). Setting this to TRUE causes all hyperparameters to be randomly set at each step.
+#' @param max.new.nodes The number of kernel instances to add to the base model.
+#' @param revisit.kernels Whether to revisit previously-assessed kernels when deleting nodes from the current best candidate.
 #' @param ... Additional parameters to be passed to gp.obj$fit.hyperparameters (see \code{\link{gaussianProcess}})
 #'
 #' @return The trained gaussianProcess object with the best BIC.
@@ -41,7 +42,14 @@ bayesian.information.criterion <- function(gp.obj) {
 #' y <- sin(1/(x^2 + 0.15))
 #' mt <- create.model.tree.builtin()
 #' gp <- bic.model.search(x, y, mt)
-bic.model.search <- function(x, y, base.model.tree, plot.gp=FALSE, reset.params=FALSE, max.new.nodes=3, ...) {
+bic.model.search <- function(x,
+                             y,
+                             base.model.tree,
+                             plot.gp=FALSE,
+                             reset.params=FALSE,
+                             max.new.nodes=3,
+                             revisit.kernels=TRUE,
+                             ...) {
   model.bic.vec <- numeric()
 
   evaluated.models <- character(0)

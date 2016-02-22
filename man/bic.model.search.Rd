@@ -5,7 +5,7 @@
 \title{Perform Model Selection Using BIC}
 \usage{
 bic.model.search(x, y, base.model.tree, plot.gp = FALSE,
-  reset.params = FALSE, max.new.nodes = 3, ...)
+  reset.params = FALSE, max.new.nodes = 3, revisit.kernels = TRUE, ...)
 }
 \arguments{
 \item{x}{A matrix or data frame of predictors}
@@ -14,13 +14,15 @@ bic.model.search(x, y, base.model.tree, plot.gp = FALSE,
 
 \item{base.model.tree}{The model tree at which the search starts}
 
+\item{plot.gp}{Whether to plot the gaussian processes encountered during the search. If ncol(x) > 1 this parameter is ignored and no plots are created.}
+
+\item{reset.params}{By default the search starts with the optimum hyperparameter values found in the previous step in the search (with new hyperparameters fitted from random start points). Setting this to TRUE causes all hyperparameters to be randomly set at each step.}
+
+\item{max.new.nodes}{The number of kernel instances to add to the base model.}
+
+\item{revisit.kernels}{Whether to revisit previously-assessed kernels when deleting nodes from the current best candidate.}
+
 \item{...}{Additional parameters to be passed to gp.obj$fit.hyperparameters (see \code{\link{gaussianProcess}})}
-
-\item{plot.gp=FALSE}{Whether to plot the gaussian processes encountered during the search. If ncol(x) > 1 this parameter is ignored and no plots are created.}
-
-\item{reset.params=FALSE}{By default the search starts with the optimum hyperparameter values found in the previous step in the search (with new hyperparameters fitted from random start points). Setting this to TRUE causes all hyperparameters to be randomly set at each step.}
-
-\item{max.new.nodes=3}{The number of kernel instances to add to the base model.}
 }
 \value{
 The trained gaussianProcess object with the best BIC.
