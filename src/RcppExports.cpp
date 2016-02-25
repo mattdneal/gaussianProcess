@@ -93,6 +93,34 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// ARDKernel
+NumericVector ARDKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_ARDKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(ARDKernel(a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
+// ARDKernelGrad
+NumericVector ARDKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_ARDKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(ARDKernelGrad(a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
 // rationalQuadraticKernel
 NumericVector rationalQuadraticKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
 RcppExport SEXP gaussianProcess_rationalQuadraticKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {

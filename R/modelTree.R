@@ -306,7 +306,7 @@ summary.ModelTree <- function(model.tree) {
       } else {
         hp_val <- model.tree$all.hyper.params[hp_vec[hp]]
       }
-      cat(paste('    - ', model.tree$kernel.objects[[kinst_class]][[hyperparam_names]][hp],
+      cat(paste('    - ', model.tree$kernel.objects[[kinst_class]][["hyperparam_names"]][hp],
                 ": ", hp_val, '\n', sep=""))
     }
   }

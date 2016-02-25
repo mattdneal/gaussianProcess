@@ -211,6 +211,12 @@ print.Kernel <- function(kernel) {
   }
 }
 
+#' Create Kernel object from model tree
+#'
+#' @param model_tree
+#'
+#' @return a kernel object
+#' @export
 create.kernel.object.from.model.tree <- function(model_tree) {
   hyperparam_names <- names(model_tree$all.hyper.params)
   kernel <- create.kernel.object(kernel=model_tree,
@@ -219,4 +225,16 @@ create.kernel.object.from.model.tree <- function(model_tree) {
                                  additional_params=list()
                                  )
   return(kernel)
+}
+
+#' Create an ARD kernel object
+#'
+#' @param dimensions
+#'
+#' @return a kernel object
+#' @export
+create.ard.kernel <- function(dimensions) {
+  k <- "ARD"
+  hyperparam_names <- paste("l", 1:dimensions, sep="")
+  kernel <- create.kernel.object(k, grad_function=NULL, hyperparam_names=hyperparam_names)
 }

@@ -35,6 +35,35 @@ NumericVector squaredExponentialKernelGrad(NumericVector a,
   return result;
 }
 
+// ****************************************************************************
+// * ARD
+// ****************************************************************************
+
+// [[Rcpp::export]]
+NumericVector ARDKernel(NumericVector a,
+                        NumericVector b,
+                        NumericVector hyperParams,
+                        List additionalParams) {
+  double sum = sumSQuaredDiffs(a / hyperParams, b / hyperParams);
+  double result = exp(-sum / 2);
+  return NumericVector::create(result);
+}
+
+// [[Rcpp::export]]
+NumericVector ARDKernelGrad(NumericVector a,
+                            NumericVector b,
+                            NumericVector hyperParams,
+                            List additionalParams) {
+  double sum = sumSQuaredDiffs(a / hyperParams, b / hyperParams);
+  // Copy hyperParams for our output vector to ensure we return things in the right order
+  NumericVector result = clone<NumericVector>(hyperParams);
+  for (int i=0; i < result.length(); i++) {
+    result[i] = pow(a[i] - b[i], 2) / pow(hyperParams[i], 3) *
+      exp(-sum / 2);
+  }
+  return result;
+}
+
 
 // ****************************************************************************
 // * Rational Quadratic
@@ -504,6 +533,12 @@ kernPtr selectKernel(std::string kernelName, bool returnGrad) {
       return(squaredExponentialKernelGrad);
     } else {
       return(squaredExponentialKernel);
+    }
+  } else if (kernelName == "ARD") {
+    if (returnGrad) {
+      return(ARDKernelGrad);
+    } else {
+      return(ARDKernel);
     }
   } else if (kernelName == "rationalQuadratic") {
     if (returnGrad) {

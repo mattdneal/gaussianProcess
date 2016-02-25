@@ -50,6 +50,14 @@ squaredExponentialKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_squaredExponentialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
+ARDKernel <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_ARDKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
+ARDKernelGrad <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_ARDKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
 rationalQuadraticKernel <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_rationalQuadraticKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
