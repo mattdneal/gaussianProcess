@@ -66,6 +66,35 @@ NumericVector ARDKernelGrad(NumericVector a,
 
 
 // ****************************************************************************
+// * Inverse ARD
+// ****************************************************************************
+
+// [[Rcpp::export]]
+NumericVector inverseARDKernel(NumericVector a,
+                        NumericVector b,
+                        NumericVector hyperParams,
+                        List additionalParams) {
+  double sum = sumSQuaredDiffs(a * hyperParams, b * hyperParams);
+  double result = exp(-sum / 2);
+  return NumericVector::create(result);
+}
+
+// [[Rcpp::export]]
+NumericVector inverseARDKernelGrad(NumericVector a,
+                            NumericVector b,
+                            NumericVector hyperParams,
+                            List additionalParams) {
+  double sum = sumSQuaredDiffs(a * hyperParams, b * hyperParams);
+  // Copy hyperParams for our output vector to ensure we return things in the right order
+  NumericVector result = clone<NumericVector>(hyperParams);
+  for (int i=0; i < result.length(); i++) {
+    result[i] = -hyperParams[i] * pow(a[i] - b[i], 2) * exp(-sum / 2);
+  }
+  return result;
+}
+
+
+// ****************************************************************************
 // * Rational Quadratic
 // ****************************************************************************
 
@@ -523,6 +552,74 @@ NumericVector neuralNetworkKernelGrad(NumericVector a,
 }
 
 // ****************************************************************************
+// * General Neural Network
+// ****************************************************************************
+
+// [[Rcpp::export]]
+NumericVector generalNeuralNetworkKernel(NumericVector a,
+                                         NumericVector b,
+                                         NumericVector hyperParams,
+                                         List additionalParams) {
+
+  double dimensions = a.length();
+  NumericVector aTilde(dimensions + 1, 1);
+  NumericVector bTilde(dimensions + 1, 1);
+  for (int i=0; i<dimensions; i++) {
+    aTilde[i] = a[i];
+    bTilde[i] = b[i];
+  }
+
+  double numerator = 2 * (sum(aTilde * pow(hyperParams, 2) * bTilde));
+  double denominator = sqrt((1 + 2 * sum(pow(aTilde, 2) * pow(hyperParams, 2))) *
+                            (1 + 2 * sum(pow(bTilde, 2) * pow(hyperParams, 2))));
+  double result = 2 / M_PI * asin(numerator / denominator);
+
+  return NumericVector::create(result);
+}
+
+// [[Rcpp::export]]
+NumericVector generalNeuralNetworkKernelGrad(NumericVector a,
+                                             NumericVector b,
+                                             NumericVector hyperParams,
+                                             List additionalParams) {
+  // Copy hyperParams for our output vector to ensure we return things in the right order
+  NumericVector result = clone<NumericVector>(hyperParams);
+
+  double dimensions = a.length();
+  NumericVector aTilde(dimensions + 1, 1);
+  NumericVector bTilde(dimensions + 1, 1);
+  for (int i=0; i<dimensions; i++) {
+    aTilde[i] = a[i];
+    bTilde[i] = b[i];
+  }
+
+  double num = 2 * (sum(aTilde * pow(hyperParams, 2) * bTilde));
+
+  double denom1 = 1 + 2 * sum(pow(aTilde, 2) * pow(hyperParams, 2));
+  double denom2 = 1 + 2 * sum(pow(bTilde, 2) * pow(hyperParams, 2));
+
+  double denom = sqrt(denom1 * denom2);
+
+  double u = num / denom;
+
+  double v = pow(1 - pow(u, 2), -0.5);
+
+  double q = pow(denom, -1);
+
+  for (int i=0; i<=dimensions; i++) {
+    double du_dsigma_i = 2 * hyperParams[i] * q * (
+      2 * aTilde[i] * bTilde[i] -
+        num * ( pow(aTilde[i], 2) / denom1 +
+                pow(bTilde[i], 2) / denom2
+        )
+      );
+    result[i] = 2 / M_PI * v * du_dsigma_i;
+  }
+
+  return result;
+}
+
+// ****************************************************************************
 // * Kernel Selector
 // ****************************************************************************
 
@@ -539,6 +636,12 @@ kernPtr selectKernel(std::string kernelName, bool returnGrad) {
       return(ARDKernelGrad);
     } else {
       return(ARDKernel);
+    }
+  } else if (kernelName == "inverseARD") {
+    if (returnGrad) {
+      return(inverseARDKernelGrad);
+    } else {
+      return(inverseARDKernel);
     }
   } else if (kernelName == "rationalQuadratic") {
     if (returnGrad) {
@@ -587,6 +690,12 @@ kernPtr selectKernel(std::string kernelName, bool returnGrad) {
       return(neuralNetworkKernelGrad);
     } else {
       return(neuralNetworkKernel);
+    }
+  } else if (kernelName == "generalisedNeuralNetwork") {
+    if (returnGrad) {
+      return(generalNeuralNetworkKernelGrad);
+    } else {
+      return(generalNeuralNetworkKernel);
     }
   } else if (kernelName == "generalisedPolynomial") {
     if (returnGrad) {

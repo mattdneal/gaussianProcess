@@ -5,7 +5,7 @@
 \title{Test an Analytic Gradient Against a Numeric Gradient}
 \usage{
 test.kernel.grad(k, k.grad, hyper.param.names, additional.params,
-  repetitions = 1000)
+  repetitions = 1000, dimensions = NULL)
 }
 \arguments{
 \item{k}{a kernel function}

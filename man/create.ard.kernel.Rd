@@ -4,7 +4,7 @@
 \alias{create.ard.kernel}
 \title{Create an ARD kernel object}
 \usage{
-create.ard.kernel(dimensions)
+create.ard.kernel(dimensions, inverse = T)
 }
 \arguments{
 \item{dimensions}{}

@@ -320,7 +320,8 @@ create.gaussian.process <- function(x, y, model.tree) {
                          itnmax=max.iterations,
                          lower=lower,
                          control=list(starttests=optimx.starttests,
-                                      trace=optimx.trace)
+                                      trace=optimx.trace,
+                                      kkt=FALSE)
     )
 
     if (optimx.obj["convcode"] > 0) {
@@ -362,7 +363,8 @@ create.gaussian.process <- function(x, y, model.tree) {
                                itnmax=max.iterations,
                                lower=lower,
                                control=list(starttests=optimx.starttests,
-                                            trace=optimx.trace)
+                                            trace=optimx.trace,
+                                            kkt=FALSE)
       )
 
       if (new.optimx.obj["convcode"] > 0) {

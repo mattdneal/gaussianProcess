@@ -43,18 +43,27 @@ create.numeric.grad <- function(k, method="Richardson", method.args=NULL, additi
 #'   \item i - the number of inputs tested (including the failed set of inputs)
 #' }
 #' @export
-test.kernel.grad <- function(k, k.grad, hyper.param.names, additional.params, repetitions=1000) {
+test.kernel.grad <- function(k,
+                             k.grad,
+                             hyper.param.names,
+                             additional.params,
+                             repetitions=1000,
+                             dimensions=NULL) {
   k.grad.num <- create.numeric.grad(k, additional.params=additional.params)
   max.diff <- 0
   for (i  in 1:repetitions) {
-    dims <- ceiling(runif(1) * 100)
+    if (is.null(dimensions)) {
+      dims <- ceiling(runif(1) * 100)
+    } else {
+      dims <- dimensions
+    }
     a <- runif(dims) * 100
     b <- runif(dims) * 100
     hyper.params <- rplaw(length(hyper.param.names), -2)
     names(hyper.params) <- hyper.param.names
     kg <- k.grad(a, b, hyper.params, additional.params)
     kgn <- k.grad.num(a, b, hyper.params, additional.params)
-    #print(sqrt(sum((kg-kgn)^2))/sqrt(sum((kgn)^2)))
+    print(sqrt(sum((kg-kgn)^2))/sqrt(sum((kgn)^2)))
     #print(sqrt(sum((a-b)^2)))
     max.diff <- max(max.diff, sqrt(sum((kg-kgn)^2))/sqrt(sum((kgn)^2)))
     #print(kg / kgn)
@@ -233,8 +242,18 @@ create.kernel.object.from.model.tree <- function(model_tree) {
 #'
 #' @return a kernel object
 #' @export
-create.ard.kernel <- function(dimensions) {
-  k <- "ARD"
+create.ard.kernel <- function(dimensions, inverse=T) {
+  if (inverse) {
+    k <- "inverseARD"
+  } else {
+    k <- "ARD"
+  }
   hyperparam_names <- paste("l", 1:dimensions, sep="")
+  kernel <- create.kernel.object(k, grad_function=NULL, hyperparam_names=hyperparam_names)
+}
+
+create.gen.nn.kernel <- function(dimensions) {
+  k <- "generalisedNeuralNetwork"
+  hyperparam_names <- paste("sigma", 0:(dimensions + 1), sep="")
   kernel <- create.kernel.object(k, grad_function=NULL, hyperparam_names=hyperparam_names)
 }

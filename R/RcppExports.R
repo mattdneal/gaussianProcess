@@ -58,6 +58,14 @@ ARDKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_ARDKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
+inverseARDKernel <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_inverseARDKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
+inverseARDKernelGrad <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_inverseARDKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
 rationalQuadraticKernel <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_rationalQuadraticKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
@@ -144,6 +152,14 @@ neuralNetworkKernel <- function(a, b, hyperParams, additionalParams) {
 
 neuralNetworkKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_neuralNetworkKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
+generalNeuralNetworkKernel <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_generalNeuralNetworkKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
+generalNeuralNetworkKernelGrad <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_generalNeuralNetworkKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 getTreeHeight <- function(tree) {
