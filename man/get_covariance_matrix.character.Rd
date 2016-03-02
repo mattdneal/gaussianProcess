@@ -5,7 +5,7 @@
 \title{Get the Covariance Matrix for a built-in kernel}
 \usage{
 \method{get_covariance_matrix}{character}(kernel, x, sigma.n, hyper.params,
-  additional.params)
+  additional.params, cache = NULL)
 }
 \arguments{
 \item{kernel}{A string}

@@ -4,7 +4,8 @@
 \alias{get_covariance_matrix_grad.Kernel}
 \title{Get the Covariance Matrix Grad for a Kernel}
 \usage{
-\method{get_covariance_matrix_grad}{Kernel}(kernel, x, sigma.n, hyper.params)
+\method{get_covariance_matrix_grad}{Kernel}(kernel, x, sigma.n, hyper.params,
+  cache = NULL)
 }
 \arguments{
 \item{kernel}{A Kernel object}

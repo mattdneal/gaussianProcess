@@ -5,7 +5,7 @@
 \title{Get the Covariance Matrix Grad for a Kernel ModelTree}
 \usage{
 \method{get_covariance_matrix_grad}{ModelTree}(kernel, kernel.grad = NULL, x,
-  sigma.n, hyper.params, additional.params = list())
+  sigma.n, hyper.params, additional.params = list(), cache = NULL)
 }
 \arguments{
 \item{kernel}{A ModelTree object}

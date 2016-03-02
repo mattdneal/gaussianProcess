@@ -5,7 +5,7 @@
 \title{Get the Covariance Matrix grad for a kernel function}
 \usage{
 \method{get_covariance_matrix_grad}{function}(kernel, kernel.grad, x, sigma.n,
-  hyper.params, additional.params)
+  hyper.params, additional.params, cache = cache)
 }
 \arguments{
 \item{kernel}{A kernel function}

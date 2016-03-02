@@ -1,3 +1,4 @@
+Kernel_class_name <- "Kernel"
 
 #' Create a numerical gradient function for a kernel using the \code{\link[numDeriv]{grad}} function.
 #'
@@ -188,7 +189,8 @@ create.kernel.object <- function(kernel, grad_function=NULL,
   kernel_obj$hyperparam_names <- hyperparam_names
 
   kernel_obj$additional_params <- additional_params
-  class(kernel_obj) <- "Kernel"
+  class(kernel_obj) <- Kernel_class_name
+
   return(kernel_obj)
 }
 
@@ -256,4 +258,18 @@ create.gen.nn.kernel <- function(dimensions) {
   k <- "generalisedNeuralNetwork"
   hyperparam_names <- paste("sigma", 0:(dimensions + 1), sep="")
   kernel <- create.kernel.object(k, grad_function=NULL, hyperparam_names=hyperparam_names)
+}
+
+set.kernel.hash <- function(kernel, cache) {
+  attr(kernel, cacheMan:::hash_attr) <- cacheMan::hash_object(kernel, cache)
+  if (class(kernel) == Kernel_class_name) {
+    kernel$kernel <- set.kernel.hash(kernel$kernel, cache)
+  }
+
+  if (class(kernel) == ModelTree_class_name) {
+    for (i in seq_along(kernel$kernel.objects)) {
+      kernel$kernel.objects[[i]] <- set.kernel.hash(kernel$kernel.objects[[i]], cache)
+    }
+  }
+  return(kernel)
 }

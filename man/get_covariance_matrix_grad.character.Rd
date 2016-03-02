@@ -5,7 +5,7 @@
 \title{Get the Covariance Matrix grad for a built-in kernel}
 \usage{
 \method{get_covariance_matrix_grad}{character}(kernel, kernel.grad = NULL, x,
-  sigma.n, hyper.params, additional.params)
+  sigma.n, hyper.params, additional.params, cache = NULL)
 }
 \arguments{
 \item{kernel}{A string}

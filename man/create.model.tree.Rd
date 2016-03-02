@@ -12,10 +12,6 @@ a modelTree object
 \description{
 Creates an instance of a modelTree object with no associated kernels.
 }
-\details{
-N.B. ModelTree objects are implemented using environments, not lists,
-and as such need to be explicitly cloned using \code{\link{clone.env}}.
-}
 \examples{
 mt <- create.model.tree()
 }

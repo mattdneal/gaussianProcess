@@ -4,7 +4,7 @@
 \alias{get_covariance_matrix}
 \title{Get the Covariance Matrix for a Kernel}
 \usage{
-get_covariance_matrix(kernel, x, sigma.n, hyper.params, ...)
+get_covariance_matrix(kernel, x, sigma.n, hyper.params, cache = NULL, ...)
 }
 \arguments{
 \item{kernel}{A Kernel object}

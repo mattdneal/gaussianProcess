@@ -4,14 +4,16 @@
 \alias{create.gaussian.process}
 \title{Create a gaussianProcess object}
 \usage{
-create.gaussian.process(x, y, model.tree)
+create.gaussian.process(x, y, kernel, cache = NULL)
 }
 \arguments{
 \item{x}{A matrix or data frame of predictor variables}
 
 \item{y}{A numeric vector of response variables}
 
-\item{model.tree}{The model tree defining the kernel function for the Gaussian process}
+\item{kernel}{a Kernel object specifying the kernel for the Gaussian process}
+
+\item{cache}{a Cache object. If NULL, a cache is created}
 }
 \value{
 An untrained gaussianProcess object

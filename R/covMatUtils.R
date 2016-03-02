@@ -92,12 +92,12 @@ eval.cov.mat.grad.node <- function(model.tree, inst.cov.mats, inst.cov.mat.grads
 #' @param model.tree A modelTree object
 #' @param return.grad Whether to return the covariance matrices or the associated grads
 #'
+#' @importFrom cacheMan cached_call
+#'
 #' @return A named list containing covariance matrices (or grad arrays), with one entry for each kernel instance.
-get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
+get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE, cache=NULL) {
 
   inst.cov.mats <- list()
-
-  hyper.param.cache.check(model.tree)
 
   for (inst.id in rownames(model.tree$kernel.instances)) {
 
@@ -128,18 +128,14 @@ get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
       # Only update the hyperparameters which are used for this kernel.
       if (length(kernel.hyper.param.indices) > 0) {
 
-        # First check the cache
-        if (inst.id %in% names(model.tree$cache[[icmg.cache.name]])) {
-          inst.grad.array <- model.tree$cache[[icmg.cache.name]][[inst.id]]
-        } else {
-          inst.grad.array <-
-            get_covariance_matrix_grad(kernel,
-                                       x,
-                                       0,
-                                       kernel.hyper.params)[, , -1]
+        inst.grad.array <- cached_call(get_covariance_matrix_grad,
+                                       kernel=kernel,
+                                       x=x,
+                                       sigma.n=0,
+                                       hyper.params=kernel.hyper.params,
+                                       cache=cache)[, , -1]
 
-          model.tree$cache[[icmg.cache.name]][[inst.id]] <- inst.grad.array
-        }
+
         cov.mat.grad.array[,,kernel.hyper.param.indices + 1] <- inst.grad.array
       }
 
@@ -147,17 +143,12 @@ get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
 
     } else {
       # Returning covariance matrix
-      if (inst.id %in% names(model.tree$cache[[icm.cache.name]])) {
-        inst.cov.mats[[inst.id]] <- model.tree$cache[[icm.cache.name]][[inst.id]]
-      } else {
-        inst.cov.mats[[inst.id]] <-
-          get_covariance_matrix(kernel,
-                                x,
-                                0,
-                                kernel.hyper.params)
-
-        model.tree$cache[[icm.cache.name]][[inst.id]] <- inst.cov.mats[[inst.id]]
-      }
+      inst.cov.mats[[inst.id]] <- cached_call(get_covariance_matrix,
+                                              kernel=kernel,
+                                              x=x,
+                                              sigma.n=0,
+                                              hyper.params=kernel.hyper.params,
+                                              cache=cache)
     }
   }
 
@@ -175,7 +166,7 @@ get.inst.cov.mats <- function(x, model.tree, return.grad=FALSE) {
 #'
 #' @return A covariance matrix
 #' @export
-get_covariance_matrix <- function(kernel, x, sigma.n, hyper.params,  ...) UseMethod("get_covariance_matrix")
+get_covariance_matrix <- function(kernel, x, sigma.n, hyper.params, cache=NULL, ...) UseMethod("get_covariance_matrix")
 
 #' Get the Covariance Matrix for a Kernel
 #'
@@ -187,14 +178,15 @@ get_covariance_matrix <- function(kernel, x, sigma.n, hyper.params,  ...) UseMet
 #'
 #' @return A covariance matrix
 #' @export
-get_covariance_matrix.Kernel <- function(kernel, x, sigma.n, hyper.params) {
+get_covariance_matrix.Kernel <- function(kernel, x, sigma.n, hyper.params, cache=NULL) {
   k <- kernel$kernel
   additional.params <- kernel$additional_params
   return(get_covariance_matrix(kernel=k,
                                x=x,
                                sigma.n=sigma.n,
                                hyper.params=hyper.params,
-                               additional.params=additional.params))
+                               additional.params=additional.params,
+                               cache=cache))
 }
 
 #' Get the Covariance Matrix for a Kernel ModelTree
@@ -208,11 +200,11 @@ get_covariance_matrix.Kernel <- function(kernel, x, sigma.n, hyper.params) {
 #' @return A covariance matrix
 #' @export
 
-get_covariance_matrix.ModelTree <- function(kernel, x, sigma.n, hyper.params, additional.params=list()) {
+get_covariance_matrix.ModelTree <- function(kernel, x, sigma.n, hyper.params, additional.params=list(), cache=NULL) {
   model.tree <- kernel
   model.tree$all.hyper.params <- hyper.params
 
-  inst.cov.mats <- get.inst.cov.mats(x, model.tree, return.grad=FALSE)
+  inst.cov.mats <- get.inst.cov.mats(x, model.tree, return.grad=FALSE, cache=cache)
 
   root.node <- find.root.node(model.tree)
 
@@ -233,7 +225,7 @@ get_covariance_matrix.ModelTree <- function(kernel, x, sigma.n, hyper.params, ad
 #'
 #' @return A covariance matrix
 #' @export
-get_covariance_matrix.character <- function(kernel, x, sigma.n, hyper.params, additional.params) {
+get_covariance_matrix.character <- function(kernel, x, sigma.n, hyper.params, additional.params, cache=NULL) {
   if (length(hyper.params) == 0) {
     hyper.params <- numeric(0)
   }
@@ -250,7 +242,7 @@ get_covariance_matrix.character <- function(kernel, x, sigma.n, hyper.params, ad
 #'
 #' @return A covariance matrix
 #' @export
-get_covariance_matrix.function <- function(kernel, x, sigma.n, hyper.params, additional.params) {
+get_covariance_matrix.function <- function(kernel, x, sigma.n, hyper.params, additional.params, cache=NULL) {
 
   if (length(hyper.params) == 0) {
     hyper.params <- numeric(0)
@@ -275,7 +267,7 @@ get_covariance_matrix.function <- function(kernel, x, sigma.n, hyper.params, add
   return(cov.mat)
 }
 
-get_covariance_matrix_grad <- function(kernel, x, sigma.n, hyper.params,  ...) UseMethod("get_covariance_matrix_grad")
+get_covariance_matrix_grad <- function(kernel, x, sigma.n, hyper.params, cache=NULL,  ...) UseMethod("get_covariance_matrix_grad")
 
 
 #' Get the Covariance Matrix Grad for a Kernel
@@ -288,7 +280,7 @@ get_covariance_matrix_grad <- function(kernel, x, sigma.n, hyper.params,  ...) U
 #'
 #' @return A covariance matrix
 #' @export
-get_covariance_matrix_grad.Kernel <- function(kernel, x, sigma.n, hyper.params) {
+get_covariance_matrix_grad.Kernel <- function(kernel, x, sigma.n, hyper.params, cache=NULL) {
   k <- kernel$kernel
   k.grad <- kernel$grad
   additional.params <- kernel$additional_params
@@ -297,7 +289,8 @@ get_covariance_matrix_grad.Kernel <- function(kernel, x, sigma.n, hyper.params) 
                                     x=x,
                                     sigma.n=sigma.n,
                                     hyper.params=hyper.params,
-                                    additional.params=additional.params))
+                                    additional.params=additional.params,
+                                    cache=cache))
 }
 
 #' Get the Covariance Matrix Grad for a Kernel ModelTree
@@ -317,15 +310,16 @@ get_covariance_matrix_grad.ModelTree <- function(kernel,
                                                  x,
                                                  sigma.n,
                                                  hyper.params,
-                                                 additional.params=list()) {
+                                                 additional.params=list(),
+                                                 cache=NULL) {
   model.tree <- kernel
   model.tree$all.hyper.params <- hyper.params
 
   sigma.n.name <- "sigma.n"
   num.training.points <- nrow(x)
 
-  inst.cov.mats <- get.inst.cov.mats(x, model.tree, return.grad=FALSE)
-  inst.cov.mat.grads <- get.inst.cov.mats(x, model.tree, return.grad=TRUE)
+  inst.cov.mats <- get.inst.cov.mats(x, model.tree, return.grad=FALSE, cache=cache)
+  inst.cov.mat.grads <- get.inst.cov.mats(x, model.tree, return.grad=TRUE, cache=cache)
 
   root.node <- find.root.node(model.tree)
   cov.mat.grad <- eval.cov.mat.grad.node(model.tree, inst.cov.mats, inst.cov.mat.grads, root.node)
@@ -359,7 +353,8 @@ get_covariance_matrix_grad.character <- function(kernel,
                                                  x,
                                                  sigma.n,
                                                  hyper.params,
-                                                 additional.params) {
+                                                 additional.params,
+                                                 cache=NULL) {
   # Make sure we pass a vector if there are no hyper params
   if (length(hyper.params) == 0) {
     hyper.params <- numeric(0)
@@ -399,7 +394,8 @@ get_covariance_matrix_grad.function <- function(kernel,
                                                 x,
                                                 sigma.n,
                                                 hyper.params,
-                                                additional.params) {
+                                                additional.params,
+                                                cache=cache) {
 
   # Do the R thing
   num.training.points <- nrow(x)

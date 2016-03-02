@@ -1,50 +1,4 @@
-
-ahp.cache.name <- "all.hyper.params.cache"
-icm.cache.name <- "inst.cov.mats.cache"
-icmg.cache.name <- "inst.cov.mats.grad.cache"
-
 ModelTree_class_name <- "ModelTree"
-
-#' Clone an Environment
-#'
-#' @param orig.env the environment to clone
-#'
-#' @return a new environment whose contents match \code{orig.env}
-#' @export
-#'
-#' @seealso \code{\link{clone.ModelTree}}
-#'
-#' @examples
-#' mt <- create.model.tree.builtin()
-#' mt2 <- clone.env(mt)
-clone.env <- function(orig.env) {
-  copy.env <- new.env()
-  for(n in ls(orig.env, all.names=TRUE)) {
-    assign(n, get(n, orig.env), copy.env)
-  }
-  attributes(copy.env) <- attributes(orig.env)
-  return(copy.env)
-}
-
-#' Clone a Model Tree
-#'
-#' @param orig.model.tree the ModelTree to clone
-#' @param invalidate.cache boolean indicating whether the cache should be cleared.
-#' If you're not sure whether you need to clear the cache or not, you probably do.
-#'
-#' @return a new Model Tree whose contents match \code{orig.model.tree}
-#' @export
-#'
-#' @examples
-#' mt <- create.model.tree.builtin()
-#' mt2 <- clone.ModelTree(mt)
-clone.ModelTree <- function(orig.model.tree, invalidate.cache=TRUE) {
-  model.tree <- clone.env(orig.model.tree)
-  if (invalidate.cache) {
-    invalidate.cache(model.tree)
-  }
-  return(model.tree)
-}
 
 generate.id <- function(existing.ids, prefix=NULL) {
   id <- NA
@@ -81,16 +35,13 @@ prod.grad <- function(a, b, a.grad, b.grad) {
 #'
 #' Creates an instance of a modelTree object with no associated kernels.
 #'
-#' N.B. ModelTree objects are implemented using environments, not lists,
-#' and as such need to be explicitly cloned using \code{\link{clone.env}}.
-#'
 #' @return a modelTree object
 #' @export
 #'
 #' @examples
 #' mt <- create.model.tree()
 create.model.tree <- function() {
-  model.tree <- new.env()
+  model.tree <- list()
   class(model.tree) <- ModelTree_class_name
 
   model.tree$operation.functions = list("+"=kern.sum,
@@ -127,59 +78,7 @@ create.model.tree <- function() {
   # Indexed by kernelClassName.
   model.tree$kernel.objects <- list()
 
-  # Calling invalidate.cache will set up an empty cache for us
-  invalidate.cache(model.tree)
-
   return(model.tree)
-}
-
-# Because model trees are environments we can update the cache and it persists
-# outside of the function.
-invalidate.cache <- function(model.tree) {
-  model.tree$cache <- list()
-  model.tree$cache[[icm.cache.name]] <- list()
-  model.tree$cache[[icmg.cache.name]] <- list()
-
-  # Recurse into any model tree based kernels
-  for (kernel in model.tree$kernel.objects) {
-    if (class(kernel$kernel) == ModelTree_class_name) {
-      invalidate.cache(kernel$kernel)
-    }
-  }
-
-  return(NULL)
-}
-
-# Because model trees are environments we can update the cache and it persists
-# outside of the function.
-hyper.param.cache.check <- function(model.tree) {
-  if (ahp.cache.name %in% names(model.tree$cache)) {
-    ahp.cache <- model.tree$cache[[ahp.cache.name]]
-    ahp <- model.tree$all.hyper.params
-
-    for (kinst.ID in model.tree$kernel.instances$kernelInstanceID) {
-      hp.indices <- model.tree$kernel.inst.hyper.param.indices[[kinst.ID]]
-
-      if (any(is.na(c(ahp[hp.indices], ahp.cache[hp.indices])))) {
-        model.tree$cache[[icm.cache.name]][[kinst.ID]] <- NULL
-        model.tree$cache[[icmg.cache.name]][[kinst.ID]] <- NULL
-      } else if (any(ahp[hp.indices] != ahp.cache[hp.indices])) {
-        model.tree$cache[[icm.cache.name]][[kinst.ID]] <- NULL
-        model.tree$cache[[icmg.cache.name]][[kinst.ID]] <- NULL
-      }
-    }
-  }
-
-  model.tree$cache[[ahp.cache.name]] <- model.tree$all.hyper.params
-
-  # Recurse into any model tree based kernels
-  for (kernel in model.tree$kernel.objects) {
-    if (class(kernel$kernel) == ModelTree_class_name) {
-      hyper.param.cache.check(kernel$kernel)
-    }
-  }
-
-  return(NULL)
 }
 
 find.root.node <- function(model.tree) {
@@ -340,7 +239,7 @@ summary.ModelTree <- function(model.tree) {
 add.kernel <- function(orig.model.tree,
                        kernel.class.name,
                        kernel) {
-  model.tree <- clone.ModelTree(orig.model.tree)
+  model.tree <- orig.model.tree
 
   if (kernel.class.name %in% names(model.tree$kernel.objects)) {
     stop("Kernel with that name is already included")
@@ -386,7 +285,7 @@ insert.kernel.instance <- function(orig.model.tree,
                                    kernel.class.name,
                                    operation.id,
                                    hyper.params=NULL) {
-  model.tree <- clone.ModelTree(orig.model.tree)
+  model.tree <- orig.model.tree
 
   if (!kernel.class.name %in% names(model.tree$kernel.objects)) {
     stop("Unknown kernel specified.")
@@ -513,7 +412,7 @@ insert.kernel.instance <- function(orig.model.tree,
 #' @param model.tree a ModelTree object
 #' @param node the node to delete (must not be the root node)
 #'
-#' @return a clone of \code{model.tree} with \code{node} deleted.
+#' @return a copy of \code{model.tree} with \code{node} deleted.
 #' @export
 delete.node <- function(model.tree, node) {
   root.node <- find.root.node(model.tree)
@@ -521,7 +420,7 @@ delete.node <- function(model.tree, node) {
     stop("Can't delete the root node.")
   }
 
-  new.mt <- clone.ModelTree(model.tree)
+  new.mt <- model.tree
 
   # Repoint the grandparent node at this node's sibling
   parent.node <- find.parent.node(new.mt, node)
@@ -617,9 +516,9 @@ generate.next.models <- function(model.tree) {
   if (nrow(model.tree$tree) == 0) {
     for (kernel in names(model.tree$kernel.objects)) {
       models[[i]] <- insert.kernel.instance(orig.model.tree=model.tree,
-                                          node=1,
-                                          kernel.class.name=kernel,
-                                          operation.id=NULL)
+                                            node=1,
+                                            kernel.class.name=kernel,
+                                            operation.id=NULL)
       i <- i + 1
     }
   } else {
@@ -647,7 +546,8 @@ generate.next.models <- function(model.tree) {
 
   model.strings <- character(length(models))
   for (i in seq_along(models)) {
-    model.strings[i] <- reduce.to.canonical.tree(models[[i]])
+    models[[i]] <- reduce.to.canonical.tree(models[[i]])
+    model.strings[i] <- as.character(models[[i]])
   }
 
   duplicates <- which(duplicated(model.strings))
@@ -714,36 +614,6 @@ create.model.tree.builtin.scaled <- function() {
 
   return(mt)
 }
-
-
-###############################################################################
-#                       .     _///_,
-#                     .      / ` ' '>
-#                       )   o'  __/_'>
-#                      (   /  _/  )_\'>
-#                       ' "__/   /_/\_>
-#                           ____/_/_/_/
-#                          /,---, _/ /
-#                         ""  /_/_/_/
-#                            /_(_(_(_                 \
-#                           (   \_\_\\_               )\
-#                            \'__\_\_\_\__            ).\
-#                            //____|___\__)           )_/
-#                            |  _  \'___'_(           /'
-#                             \_ (-'\'___'_\      __,'_'
-#                             __) \  \\___(_   __/.__,'
-#                          ,((,-,__\  '", __\_/. __,'
-#                                       '"./_._._-'
-#
-#
-#
-#         HERE BE DRAGONS - The following code does not follow the
-#                           R convention of pure functions with no
-#                           side effects. They modify ModelTree
-#                           objects in place. Use or modify at your
-#                           own peril.
-#
-###############################################################################
 
 
 check.node.is.in.canonical.form <- function(model.tree, node) {
@@ -829,6 +699,7 @@ stretch.block <- function(model.tree, node, operationID) {
     # We're done with this node, so let's move on.
     current.node <- model.tree$tree[current.node, "rightDaughter"]
   }
+  return(model.tree)
 }
 
 stretch.tree <- function(model.tree) {
@@ -842,13 +713,14 @@ stretch.tree <- function(model.tree) {
     current.op <- model.tree$tree[current.node, "operationID"]
 
     if (!block.of.ops.is.stretched(model.tree, current.node, current.op)) {
-      stretch.block(model.tree, current.node, current.op)
+      model.tree <- stretch.block(model.tree, current.node, current.op)
     }
 
     if (!is.na(current.op)) {
       node.queue <- c(node.queue, as.numeric(model.tree$tree[current.node, c("leftDaughter", "rightDaughter")]))
     }
   }
+  return(model.tree)
 }
 
 order.and.return.string <- function(model.tree, node) {
@@ -861,8 +733,13 @@ order.and.return.string <- function(model.tree, node) {
     right.daughter.op <- model.tree$tree[right.daughter, "operationID"]
     if (!identical(right.daughter.op, node.op)) {
       # Terminal string of a block - get strings and re-order if necessary
-      left.daughter.string <- order.and.return.string(model.tree, left.daughter)
-      right.daughter.string <- order.and.return.string(model.tree, right.daughter)
+      left.temp <- order.and.return.string(model.tree, left.daughter)
+      left.daughter.string <- left.temp$string
+      model.tree <- left.temp$model.tree
+
+      right.temp <- order.and.return.string(model.tree, right.daughter)
+      right.daughter.string <- right.temp$string
+      model.tree <- right.temp$model.tree
       if (left.daughter.string > right.daughter.string) {
         model.tree$tree[node, "leftDaughter"] <- right.daughter
         model.tree$tree[node, "rightDaughter"] <- left.daughter
@@ -882,9 +759,11 @@ order.and.return.string <- function(model.tree, node) {
         block.nodes <- c(block.nodes, current.block.node)
         block.left.daughter <- model.tree$tree[current.block.node, "leftDaughter"]
         block.left.daughters <- c(block.left.daughters, block.left.daughter)
+        block.left.daughter.temp <- order.and.return.string(model.tree,
+                                                            block.left.daughter)
+        model.tree <- block.left.daughter.temp$model.tree
         block.left.daughter.strings <- c(block.left.daughter.strings,
-                                         order.and.return.string(model.tree,
-                                                                 block.left.daughter))
+                                         block.left.daughter.temp$string)
         current.block.node <- model.tree$tree[current.block.node, "rightDaughter"]
       }
 
@@ -892,9 +771,11 @@ order.and.return.string <- function(model.tree, node) {
       # we need to include this in the ordering
       terminal.right.daughter <- current.block.node
       block.left.daughters <- c(block.left.daughters, terminal.right.daughter)
+      block.left.daughter.temp <- order.and.return.string(model.tree,
+                                                          terminal.right.daughter)
+      model.tree <- block.left.daughter.temp$model.tree
       block.left.daughter.strings <- c(block.left.daughter.strings,
-                                       order.and.return.string(model.tree,
-                                                               terminal.right.daughter))
+                                       block.left.daughter.temp$string)
 
       correct.daughter.order <- order(block.left.daughter.strings)
       ordered.daughters <- block.left.daughters[correct.daughter.order]
@@ -910,18 +791,20 @@ order.and.return.string <- function(model.tree, node) {
       model.tree$tree[block.node, "rightDaughter"] <- new.right.daughter
     }
   }
-  return(node.to.string(model.tree, node, show.node.ids=FALSE))
+  return(list(string=node.to.string(model.tree, node, show.node.ids=FALSE),
+              model.tree=model.tree))
 }
 
 order.tree <- function(model.tree) {
   root.node <- find.root.node(model.tree)
-  model.string <- order.and.return.string(model.tree, root.node)
-  return(model.string)
+  model.temp <- order.and.return.string(model.tree, root.node)
+  model.tree <- model.temp$model.tree
+  return(model.tree)
 }
 
 reduce.to.canonical.tree <- function(model.tree) {
   # First we stretch the tree, then we order it.
-  stretch.tree(model.tree)
-  model.string <- order.tree(model.tree)
-  return(model.string)
+  model.tree <- stretch.tree(model.tree)
+  model.tree <- order.tree(model.tree)
+  return(model.tree)
 }

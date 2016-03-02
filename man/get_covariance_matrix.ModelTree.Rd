@@ -5,7 +5,7 @@
 \title{Get the Covariance Matrix for a Kernel ModelTree}
 \usage{
 \method{get_covariance_matrix}{ModelTree}(kernel, x, sigma.n, hyper.params,
-  additional.params = list())
+  additional.params = list(), cache = NULL)
 }
 \arguments{
 \item{kernel}{A ModelTree object}

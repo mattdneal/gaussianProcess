@@ -12,7 +12,7 @@ delete.node(model.tree, node)
 \item{node}{the node to delete (must not be the root node)}
 }
 \value{
-a clone of \code{model.tree} with \code{node} deleted.
+a copy of \code{model.tree} with \code{node} deleted.
 }
 \description{
 Delete a Node in a Model Tree

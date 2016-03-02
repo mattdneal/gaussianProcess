@@ -4,7 +4,7 @@
 \alias{get.inst.cov.mats}
 \title{Get Kernel Instance Covariance Matrices or Grads}
 \usage{
-get.inst.cov.mats(x, model.tree, return.grad = FALSE)
+get.inst.cov.mats(x, model.tree, return.grad = FALSE, cache = NULL)
 }
 \arguments{
 \item{x}{A numeric matrix}
