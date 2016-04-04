@@ -227,9 +227,12 @@ NumericVector rationalQuadraticKernel(NumericVector a,
                                       NumericVector b,
                                       NumericVector hyperParams,
                                       List additionalParams) {
+
+  checkHPNames(rationalQuadraticHPs, hyperParams.names());
+
   double sum = sumSQuaredDiffsPartial(a, b, additionalParams);
-  double l = hyperParams["l"];
-  double alpha = hyperParams["alpha"];
+  double l = hyperParams[0];
+  double alpha = hyperParams[1];
   double result = pow(1 + sum / ( 2 * alpha * pow(l, 2)), -alpha);
   return NumericVector::create(result);
 }
@@ -239,12 +242,15 @@ NumericVector rationalQuadraticKernelGrad(NumericVector a,
                                           NumericVector b,
                                           NumericVector hyperParams,
                                           List additionalParams) {
+
+  checkHPNames(rationalQuadraticHPs, hyperParams.names());
+
   double sum = sumSQuaredDiffsPartial(a, b, additionalParams);
   // Copy hyperParams for our output vector to ensure we return things in the right order
   NumericVector result = clone<NumericVector>(hyperParams);
 
-  double l = hyperParams["l"];
-  double alpha = hyperParams["alpha"];
+  double l = hyperParams[0];
+  double alpha = hyperParams[1];
   //Rcout << sigma << "; " << l << "; " << alpha << ";\n";
 
   double u = sum / (2 * pow(l, 2));
@@ -253,9 +259,51 @@ NumericVector rationalQuadraticKernelGrad(NumericVector a,
   double x = u / (alpha + u);
   //Rcout << u << "; " << v << "; " << w << "; " << x << ";\n";
 
-  result["l"] = w * pow(v, -(alpha + 1));
-  result["alpha"] = pow(v, -alpha) * (x - log(v));
+  result[0] = w * pow(v, -(alpha + 1));
+  result[1] = pow(v, -alpha) * (x - log(v));
 
+  return result;
+}
+
+// [[Rcpp::export]]
+NumericMatrix rationalQuadraticKernelHess(NumericVector a,
+                                          NumericVector b,
+                                          NumericVector hyperParams,
+                                          List additionalParams) {
+
+  checkHPNames(rationalQuadraticHPs, hyperParams.names());
+
+  double sum = sumSQuaredDiffsPartial(a, b, additionalParams);
+  // Copy hyperParams for our output vector to ensure we return things in the right order
+  NumericMatrix result(hyperParams.size());
+  result.attr("dimnames") = List::create(hyperParams.names(), hyperParams.names());
+
+  double l = hyperParams[0];
+  double alpha = hyperParams[1];
+
+  double k = rationalQuadraticKernel(a, b, hyperParams, additionalParams)[0];
+
+  NumericVector kGrad = rationalQuadraticKernelGrad(a, b, hyperParams, additionalParams);
+
+  result(0, 0) = sum / pow(l, 4) *
+    pow(1 + sum / (2 * alpha * pow(l, 2)), -(alpha + 1)) *
+    (sum *
+      (alpha + 1) /
+      (alpha * pow(l, 2)) *
+      pow(1 + sum / (2 * alpha * pow(l, 2)), -1) -
+      3);
+
+  result(0, 1) = kGrad[0] * (sum / (2 * alpha * pow(l, 2)  + sum) -
+                             log(1 + sum / (2 * alpha * pow(l, 2)))) +
+                 k * (2 * sum / (2 * alpha * pow(l, 3) + l * sum) -
+                      4 * alpha * l * sum / pow(2 * alpha * pow(l, 2) + sum, 2));
+
+  result(1, 0) = result(0, 1);
+
+  double u = 2 * alpha * pow(l, 2) + sum;
+
+  result(1, 1) = k * (sum / u * (1 / alpha - 2 * pow(l, 2) / u) +
+                      pow(sum / u - log(1 + sum / (2 * alpha * pow(l, 2))), 2));
   return result;
 }
 
@@ -855,7 +903,7 @@ kernHessPtr selectKernelHess(std::string kernelName) {
   } else if (kernelName == "inverseARD") {
     return(inverseARDKernelHess);
   } else if (kernelName == "rationalQuadratic") {
-    return(dummyFun);
+    return(rationalQuadraticKernelHess);
   } else if (kernelName == "periodic") {
     return(dummyFun);
   } else if (kernelName == "constant") {

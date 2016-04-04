@@ -102,6 +102,10 @@ rationalQuadraticKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_rationalQuadraticKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
+rationalQuadraticKernelHess <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_rationalQuadraticKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
 periodicKernel <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_periodicKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }

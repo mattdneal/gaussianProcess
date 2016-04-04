@@ -276,6 +276,20 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// rationalQuadraticKernelHess
+NumericMatrix rationalQuadraticKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_rationalQuadraticKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(rationalQuadraticKernelHess(a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
 // periodicKernel
 NumericVector periodicKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
 RcppExport SEXP gaussianProcess_periodicKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
