@@ -90,6 +90,10 @@ inverseARDKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_inverseARDKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
+inverseARDKernelHess <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_inverseARDKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
 rationalQuadraticKernel <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_rationalQuadraticKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }

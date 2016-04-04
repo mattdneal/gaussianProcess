@@ -187,12 +187,36 @@ NumericVector inverseARDKernelGrad(NumericVector a,
   double sum = sumSQuaredDiffs(a * hyperParams, b * hyperParams);
   // Copy hyperParams for our output vector to ensure we return things in the right order
   NumericVector result = clone<NumericVector>(hyperParams);
+
   for (int i=0; i < result.length(); i++) {
     result[i] = -hyperParams[i] * pow(a[i] - b[i], 2) * exp(-sum / 2);
   }
   return result;
 }
 
+// [[Rcpp::export]]
+NumericMatrix inverseARDKernelHess(NumericVector a,
+                                   NumericVector b,
+                                   NumericVector hyperParams,
+                                   List additionalParams) {
+  double sum = sumSQuaredDiffs(a * hyperParams, b * hyperParams);
+  // Copy hyperParams for our output vector to ensure we return things in the right order
+  NumericMatrix result(hyperParams.size());
+  result.attr("dimnames") = List::create(hyperParams.names(), hyperParams.names());
+
+  for (int i=0; i < hyperParams.length(); i++) {
+    for (int j=i; j < hyperParams.length(); j++) {
+      result(i, j) = hyperParams[i] * pow(a[i] - b[i], 2) *
+        hyperParams[j] * pow(a[j] - b[j], 2) *
+        exp(-sum / 2);
+      if (i == j) {
+        result(i, j) -= exp(-sum / 2);
+      }
+      result(j, i) = result(i, j);
+    }
+  }
+  return result;
+}
 
 // ****************************************************************************
 // * Rational Quadratic
@@ -829,7 +853,7 @@ kernHessPtr selectKernelHess(std::string kernelName) {
   } else if (kernelName == "ARD") {
     return(ARDKernelHess);
   } else if (kernelName == "inverseARD") {
-    return(dummyFun);
+    return(inverseARDKernelHess);
   } else if (kernelName == "rationalQuadratic") {
     return(dummyFun);
   } else if (kernelName == "periodic") {

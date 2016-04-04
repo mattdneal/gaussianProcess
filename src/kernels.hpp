@@ -70,6 +70,10 @@ NumericVector inverseARDKernelGrad(NumericVector a,
                                    NumericVector hyperParams,
                                    List additionalParams);
 
+NumericMatrix inverseARDKernelHess(NumericVector a,
+                                   NumericVector b,
+                                   NumericVector hyperParams,
+                                   List additionalParams);
 
 // ****************************************************************************
 // * Rational Quadratic
