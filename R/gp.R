@@ -48,6 +48,10 @@ create.gaussian.process <- function(x, y, kernel, cache=NULL) {
     stop("x does not appear to be a matrix or a vector")
   }
 
+  if (class(kernel) != Kernel_class_name) {
+    stop("invalid kernel specified")
+  }
+
   gp.obj$training.points <- x
   gp.obj$num.training.points <- num.training.points
   gp.obj$training.point.values <- y
@@ -187,7 +191,8 @@ get.marginal.likelihood <- function(gp, sigma.n, hyper.params) {
 
   log.marginal.likelihood <- as.numeric( - 1/2 * t(y) %*% x
                                          - 1/2 * cov.mat.det.log
-                                         - nrow(gp$training.points) / 2)
+                                         - nrow(gp$training.points)
+                                           * log(2 * pi) / 2)
 
   return(log.marginal.likelihood)
 }
@@ -230,8 +235,6 @@ get.marginal.likelihood.grad <- function(gp, sigma.n, hyper.params) {
                              cov.mat.chol,
                              cache=gp$cache)
 
-  y <- gp$training.point.values
-
   alpha <- cached_call(get.alpha,
                        kernel=gp$kernel,
                        training.points=gp$training.points,
@@ -272,6 +275,8 @@ get.marginal.likelihood.grad <- function(gp, sigma.n, hyper.params) {
 get.marginal.likelihood.hessian <- function(gp, sigma.n, hyper.params) {
   hyper.params <- check.hyperparams(gp, hyper.params)
 
+  num.hps <- length(hyper.params) + 1
+
   cov.mat.grad.array <- cached_call(get_covariance_matrix_grad,
                                     kernel=gp$kernel,
                                     x=gp$training.points,
@@ -279,8 +284,19 @@ get.marginal.likelihood.hessian <- function(gp, sigma.n, hyper.params) {
                                     hyper.params=hyper.params,
                                     cache=gp$cache)
 
-  log.marginal.likelihood.grad <- numeric(length(hyper.params) + 1)
-  names(log.marginal.likelihood.grad) <- c(sigma.n.name, names(hyper.params))
+  cov.mat.hess.array <- cached_call(get_covariance_matrix_hess,
+                                    kernel=gp$kernel,
+                                    x=gp$training.points,
+                                    sigma.n=sigma.n,
+                                    hyper.params=hyper.params,
+                                    cache=gp$cache)
+
+  log.marginal.likelihood.hess <- matrix(0,
+                                         nrow=num.hps,
+                                         ncol=num.hps)
+
+  colnames(log.marginal.likelihood.hess) <- c(sigma.n.name, names(hyper.params))
+  rownames(log.marginal.likelihood.hess) <- c(sigma.n.name, names(hyper.params))
 
   cov.mat.chol <- cached_call(get.cov.mat.chol,
                               kernel=gp$kernel,
@@ -293,8 +309,6 @@ get.marginal.likelihood.hessian <- function(gp, sigma.n, hyper.params) {
                              cov.mat.chol,
                              cache=gp$cache)
 
-  y <- gp$training.point.values
-
   alpha <- cached_call(get.alpha,
                        kernel=gp$kernel,
                        training.points=gp$training.points,
@@ -303,18 +317,43 @@ get.marginal.likelihood.hessian <- function(gp, sigma.n, hyper.params) {
                        hyper.params=hyper.params,
                        cache=gp$cache)
 
+
+  grad_k_alpha <- matrix(0, nrow=length(alpha), ncol=num.hps)
+  grad.k.k.inv <- cov.mat.grad.array
+  for (i in 1:num.hps) {
+    grad_k_alpha[, i] <- cov.mat.grad.array[, , i] %*% alpha
+    grad.k.k.inv[, , i] <- cov.mat.grad.array[, , i] %*% cov.mat.inv
+  }
+
+  U <- alpha %*% t(alpha) - cov.mat.inv
+
+  for (i in 1:num.hps) {
+    for (j in i:num.hps) {
+      L <- sum(cov.mat.inv * (grad_k_alpha[, i] %*% t(grad_k_alpha[, j])))
+      M <- sum(t(grad.k.k.inv[, , i]) * grad.k.k.inv[, , j])
+      N <- sum(U * cov.mat.hess.array[, , i, j])
+      log.marginal.likelihood.hess[i, j] <-
+        log.marginal.likelihood.hess[j, i] <- 1/2 * (N + M) - L
+    }
+  }
+
+  #V <- cov.mat.hess.array
+  #
+  #for (i in 1:num.hps) {
+  #  for (j in 1:num.hps) {
+  #    V[, , i, j] <- grad_k_alpha[, i] %*% t(grad_k_alpha[, j])
+  #  }
+  #}
   # The * rather than %*% in what follows is not a mistake - tr(t(A)%*%B) is
   # the sum of the element-wise product of A and B.
-  # Maybe replace the sum() with kahan's summation or something equivalent.
-  # Can't find details of R's implementation of sum().
-  temp.multiplicand <- t((alpha %*% t(alpha) - cov.mat.inv))
+  #temp.multiplicand <- t((alpha %*% t(alpha) - cov.mat.inv))
 
-  temp.multiplicand <- array(rep(temp.multiplicand, length(hyper.params) + 1),
-                             dim(cov.mat.grad.array))
+  #temp.multiplicand <- array(rep(temp.multiplicand, length(hyper.params) + 1),
+  #                           dim(cov.mat.grad.array))
 
-  log.marginal.likelihood.grad <- colSums(1/2 * temp.multiplicand * cov.mat.grad.array, dims=2)
+  #log.marginal.likelihood.grad <- colSums(1/2 * temp.multiplicand * cov.mat.grad.array, dims=2)
 
-  return(log.marginal.likelihood.grad)
+  return(log.marginal.likelihood.hess)
 }
 
 get.marginal.likelihood.optimx <- function(par, gp) {

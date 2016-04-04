@@ -75,7 +75,6 @@ bayesian.information.criterion.EDoF <- function(gp.obj) {
 
   # Trace of matrix product is sum of pointwise product
   k <- sum(cov.mat.inv * cov.mat.noisefree)
-  print(k)
   n <- nrow(gp.obj$training.points)
   return(-2 * log.L + k * log(n))
 }
@@ -106,21 +105,46 @@ bayesian.information.criterion.EDoF.eigen <- function(gp.obj) {
   log.L <- get.marginal.likelihood(gp=gp.obj,
                                    sigma.n=gp.obj$optimized.sigma.n,
                                    hyper.params=gp.obj$optimized.hyperparams)
-  
+
   cov.mat.noisefree <- cached_call(get_covariance_matrix,
                                    kernel=gp.obj$kernel,
                                    x=gp.obj$training.points,
                                    sigma.n=0,
                                    hyper.params=gp.obj$optimized.hyperparams,
                                    cache=gp.obj$cache)
-  
-  
+
+
   # Trace of matrix product is sum of pointwise product
   eigenvals <- eigen(cov.mat.noisefree, symmetric=TRUE, only.values=TRUE)$values
   k <- sum(eigenvals / (eigenvals + gp.obj$optimized.sigma.n^2))
-  print(k)
   n <- nrow(gp.obj$training.points)
   return(-2 * log.L + k * log(n))
+}
+
+#' Calculate Laplace Approximation of a GP
+#'
+#' Calculate the Laplace Approximation of the posterior log likelihood of a gp
+#'
+#' @param gp.obj A trained gaussianProcess object
+#'
+#' @return The approximate posterior log likelihood for the input GP object.
+#' @export
+#' @seealso \code{\link{bic.model.search}} and \code{\link{gaussianProcess}}
+posterior.laplace.approximation <- function(gp.obj) {
+  # Must be a trained GP
+  log.L <- get.marginal.likelihood(gp=gp.obj,
+                                   sigma.n=gp.obj$optimized.sigma.n,
+                                   hyper.params=gp.obj$optimized.hyperparams)
+
+
+  log.det.H <- determinant(get.marginal.likelihood.hessian(gp=gp.obj,
+                                                           sigma.n=gp.obj$optimized.sigma.n,
+                                                           hyper.params=gp.obj$optimized.hyperparams),
+                           logarithm=TRUE)$modulus
+
+  attr(log.det.H, "logarithm") <- NULL
+
+  return(-2 * log.L + log.det.H)
 }
 
 

@@ -2,16 +2,17 @@
 % Please edit documentation in R/covMatUtils.R
 \name{get.inst.cov.mats}
 \alias{get.inst.cov.mats}
-\title{Get Kernel Instance Covariance Matrices or Grads}
+\title{Get Kernel Instance Covariance Matrices, Grads or Hessians}
 \usage{
-get.inst.cov.mats(x, model.tree, return.grad = FALSE, cache = NULL)
+get.inst.cov.mats(x, model.tree, return.type = c("cov", "grad", "hess"),
+  cache = NULL)
 }
 \arguments{
 \item{x}{A numeric matrix}
 
 \item{model.tree}{A modelTree object}
 
-\item{return.grad}{Whether to return the covariance matrices or the associated grads}
+\item{return.type}{Whether to return the covariance matrices, the associated grads, or the hessians}
 }
 \value{
 A named list containing covariance matrices (or grad arrays), with one entry for each kernel instance.

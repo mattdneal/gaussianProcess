@@ -23,6 +23,97 @@ create.numeric.grad <- function(k, method="Richardson", method.args=NULL, additi
   return(k.grad)
 }
 
+#' Create a numerical Hessian function for a kernel using the \code{\link[numDeriv]{hessian}} function.
+#'
+#' @param k kernel function
+#' @param method method for creating numeric Hessian, see \code{\link[numDeriv]{hessian}}
+#' @param method.args method arguments for creating numeric Hessian, see \code{\link[numDeriv]{hessian}}
+#' @param additional.params additional parameters for the kernel function \code{k}
+#'
+#' @return A function which gives the numeric Hessian of \code{k} w.r.t. the kernel hyperparameters.
+#' @export
+#'
+#' @importFrom numDeriv hessian
+create.numeric.hessian <- function(k, method="Richardson", method.args=NULL, additional.params=list()) {
+  k.hess <- function(a, b, hyper.params, additional.params) {
+    out <- hessian(function(inner.hyper.params) {k(a, b, inner.hyper.params, additional.params)},
+                hyper.params,
+                method=method,
+                method.args=method.args)
+    names(out) <- names(hyper.params)
+    return(out)
+  }
+  return(k.hess)
+}
+
+#' Create a numerical Hessian function from a kernel grad using the \code{\link[numDeriv]{jacobian}} function.
+#'
+#' @param k.grad function giving the gradient of the kernel
+#' @param method method for creating numeric Jacobian, see \code{\link[numDeriv]{jacobian}}
+#' @param method.args method arguments for creating numeric Jacobian, see \code{\link[numDeriv]{jacobian}}
+#' @param additional.params additional parameters for the kernel grad function \code{k}
+#'
+#' @return A function which gives the numeric Hessian for \code{k.grad} w.r.t. the kernel hyperparameters.
+#' @export
+#'
+#' @importFrom numDeriv jacobian
+create.numeric.hessian.from.grad <- function(k.grad, method="Richardson", method.args=NULL, additional.params=list()) {
+  k.hess <- function(a, b, hyper.params, additional.params) {
+    out <- jacobian(function(inner.hyper.params) {k.grad(a, b, inner.hyper.params, additional.params)},
+                   hyper.params,
+                   method=method,
+                   method.args=method.args)
+    names(out) <- names(hyper.params)
+    return(out)
+  }
+  return(k.hess)
+}
+
+test.kernel.functions <- function(kernel_string,
+                                  hyper.param.names,
+                                  repetitions=1000,
+                                  additional.params=list(),
+                                  dimensions=NULL) {
+  k <- function(a, b, hyper.params, additional.params) {
+    callKernelByString(kernel_string, a, b, hyper.params, additional.params)
+  }
+  k.grad <- function(a, b, hyper.params, additional.params) {
+    callKernelGradByString(kernel_string, a, b, hyper.params, additional.params)
+  }
+  k.hess <- function(a, b, hyper.params, additional.params) {
+    callKernelHessByString(kernel_string, a, b, hyper.params, additional.params)
+  }
+
+  k.grad.numeric <- create.numeric.grad(k)
+  k.hess.numeric <- create.numeric.hessian.from.grad(k.grad)
+
+  results <- matrix(0, nrow=repetitions, ncol=6)
+  colnames(results) <- c("grad.diff", "hess.diff")
+  out <- list(params=list(), results=results, outputs=list())
+
+  for (i in 1:repetitions) {
+    if (is.null(dimensions)) {
+      dims <- ceiling(runif(1) * 100)
+    } else {
+      dims <- dimensions
+    }
+    a <- runif(dims) * 100
+    b <- runif(dims) * 100
+    hyper.params <- rplaw(length(hyper.param.names), -2)
+    names(hyper.params) <- hyper.param.names
+    kg <- k.grad(a, b, hyper.params, additional.params)
+    kgn <- k.grad.numeric(a, b, hyper.params, additional.params)
+
+    kh <- k.hess(a, b, hyper.params, additional.params)
+    khn <- k.hess.numeric(a, b, hyper.params, additional.params)
+
+    out$results[i, ] <- c(sum((kg-kgn)^2)^0.5, sum((kh-khn)^2)^0.5)
+    out$params[[i]] <- list(a=a, b=b, hyper.params=hyper.params)
+    out$outputs[[i]] <- list(k.grad=kg, k.grad.numeric=kgn, k.hess=kh, k.hess.numeric=khn)
+  }
+  return(out)
+}
+
 #' Test an Analytic Gradient Against a Numeric Gradient
 #'
 #' Creates a numerical approximation to the gradient function of a kernel (using \code{\link{create.numeric.grad}})
@@ -159,7 +250,7 @@ random.forest.partition.function.generator <- function(rf) {
 #'
 #' @return A Kernel object
 #' @export
-create.kernel.object <- function(kernel, grad_function=NULL,
+create.kernel.object <- function(kernel, grad_function=NULL, hess_function=NULL,
                                  hyperparam_names=character(0),
                                  additional_params=list()) {
   kernel_obj <- list()
@@ -169,17 +260,43 @@ create.kernel.object <- function(kernel, grad_function=NULL,
     stop("grad_function is not null, but kernel is not a function.")
   }
 
-  if (is.null(grad_function)) {
-    if (is.character(kernel)) {
-      # Built-in kernel
-      kernel_obj$grad <- kernel
-    } else {
+  if (!is.null(hess_function) & !is.function(kernel)) {
+    stop("hess_function is not null, but kernel is not a function.")
+  }
+
+  kernel_obj$grad <- NULL
+  kernel_obj$hess <- NULL
+
+  if (is.function(kernel)) {
+    # Gradient
+    if (is.function(grad_function)) {
+      # Grad supplied.
+      kernel_obj$grad <- grad_function
+    } else if (is.null(grad_function)) {
       # No grad supplied. Make a grad.
       kernel_obj$grad <- create.numeric.grad(kernel)
+    } else {
+      stop("Invalid grad_function")
     }
-  } else {
-    # Grad supplied.
-    kernel_obj$grad <- grad_function
+
+    # Hessian
+    if (is.function(hess_function)) {
+      # Hessian supplied.
+      kernel_obj$hess <- hess_function
+    } else if (is.null(hess_function)) {
+      # No Hessian supplied. Make a Hessian function
+      if (is.function(grad_function)) {
+        kernel_obj$hess <- create.numeric.hessian.from.grad(grad_function)
+      } else {
+        kernel_obj$hess <- create.numeric.hessian(kernel)
+      }
+    } else {
+      stop("Invalid hess_function")
+    }
+  }
+
+  if (is.character(kernel)) {
+    hyperparam_names <- getKernelHyperparamNames(kernel, additional_params)
   }
 
   if (length(hyperparam_names) == 0) {

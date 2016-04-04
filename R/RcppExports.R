@@ -13,6 +13,10 @@ getCovarianceMatrixGradArray <- function(x, k, sigma_n, hyperParams, additionalP
     .Call('gaussianProcess_getCovarianceMatrixGradArray', PACKAGE = 'gaussianProcess', x, k, sigma_n, hyperParams, additionalParams)
 }
 
+getCovarianceMatrixHessianArray <- function(x, k, sigma_n, hyperParams, additionalParams) {
+    .Call('gaussianProcess_getCovarianceMatrixHessianArray', PACKAGE = 'gaussianProcess', x, k, sigma_n, hyperParams, additionalParams)
+}
+
 #' Select Built-in C++ Kernels by Name
 #'
 #' Built in kernels include:
@@ -42,12 +46,28 @@ callKernelByString <- function(kernelName, a, b, hyperParams, additionalParams) 
     .Call('gaussianProcess_callKernelByString', PACKAGE = 'gaussianProcess', kernelName, a, b, hyperParams, additionalParams)
 }
 
+callKernelGradByString <- function(kernelName, a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_callKernelGradByString', PACKAGE = 'gaussianProcess', kernelName, a, b, hyperParams, additionalParams)
+}
+
+callKernelHessByString <- function(kernelName, a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_callKernelHessByString', PACKAGE = 'gaussianProcess', kernelName, a, b, hyperParams, additionalParams)
+}
+
+getKernelHyperparamNames <- function(kernelName, additionalParams) {
+    .Call('gaussianProcess_getKernelHyperparamNames', PACKAGE = 'gaussianProcess', kernelName, additionalParams)
+}
+
 squaredExponentialKernel <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_squaredExponentialKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 squaredExponentialKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_squaredExponentialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
+squaredExponentialKernelHess <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_squaredExponentialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 ARDKernel <- function(a, b, hyperParams, additionalParams) {

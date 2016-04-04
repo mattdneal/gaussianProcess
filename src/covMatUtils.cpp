@@ -1,6 +1,7 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 #include <RcppArmadillo.h>
+#include "utils.hpp"
 #include "covMatUtils.hpp"
 #include "kernels.hpp"
 using namespace Rcpp;
@@ -97,6 +98,61 @@ NumericVector getCovarianceMatrixGradArray(NumericMatrix x,
   return(wrap(covMatGrad));
 }
 
+// [[Rcpp::export]]
+NumericVector getCovarianceMatrixHessianArray(NumericMatrix x,
+                                              std::string k,
+                                              NumericVector sigma_n,
+                                              NumericVector hyperParams,
+                                              List additionalParams
+) {
+  int numTrainingPoints = x.nrow();
+
+  int numHyperParams = hyperParams.size() + 1;
+
+  NumericVector covMatHessOut(pow(numTrainingPoints, 2) * pow(numHyperParams, 2));
+
+  int dArr[] = {numTrainingPoints, numTrainingPoints, numHyperParams, numHyperParams};
+
+  std::vector<int> d (dArr, dArr + sizeof(dArr) / sizeof(dArr[0]));
+
+  kernHessPtr kernelHess = selectKernelHess(k);
+
+  NumericMatrix tempHess;
+  for (int i=0; i<numTrainingPoints; i++) {
+    int arrIndArr[] = {i, i, 0, 0};
+    std::vector<int> arrInd (arrIndArr, arrIndArr + sizeof(arrIndArr) / sizeof(arrIndArr[0]));
+    int index = arrToVecInd(arrInd, d);
+    covMatHessOut(index) = 2;
+  }
+
+  if (hyperParams.size() > 0) {
+    for (int sample1=0; sample1<numTrainingPoints; sample1++) {
+      for (int sample2=0; sample2<=sample1; sample2++) {
+        tempHess = kernelHess(x(sample1, _), x(sample2, _), hyperParams, additionalParams);
+        for (int i=0; i<hyperParams.size(); i++) {
+          for (int j=0; j<hyperParams.size(); j++) {
+            int arrIndArr1[] = {sample1, sample2, i + 1, j + 1};
+            std::vector<int> arrInd1 (arrIndArr1, arrIndArr1 + sizeof(arrIndArr1) / sizeof(arrIndArr1[0]));
+            int index1 = arrToVecInd(arrInd1, d);
+
+            int arrIndArr2[] = {sample2, sample1, i + 1, j + 1};
+            std::vector<int> arrInd2 (arrIndArr2, arrIndArr2 + sizeof(arrIndArr2) / sizeof(arrIndArr2[0]));
+            int index2 = arrToVecInd(arrInd2, d);
+
+            covMatHessOut(index1) = tempHess(i, j);
+            covMatHessOut(index2) = tempHess(i, j);
+          }
+        }
+      }
+    }
+  }
+
+  NumericVector dim = NumericVector::create(numTrainingPoints, numTrainingPoints, numHyperParams, numHyperParams);
+
+  covMatHessOut.attr("dim") = dim;
+
+  return(covMatHessOut);
+}
 
 // A function for calling c++ kernels directly from R
 //' Select Built-in C++ Kernels by Name
@@ -134,5 +190,23 @@ NumericVector callKernelByString(std::string kernelName,
   return(kernel(a, b, hyperParams, additionalParams));
 }
 
-/*** R
-*/
+
+// [[Rcpp::export]]
+NumericVector callKernelGradByString(std::string kernelName,
+                                     NumericVector a,
+                                     NumericVector b,
+                                     NumericVector hyperParams,
+                                     List additionalParams) {
+  kernPtr kernelGrad = selectKernel(kernelName, TRUE);
+  return(kernelGrad(a, b, hyperParams, additionalParams));
+}
+
+// [[Rcpp::export]]
+NumericVector callKernelHessByString(std::string kernelName,
+                                     NumericVector a,
+                                     NumericVector b,
+                                     NumericVector hyperParams,
+                                     List additionalParams) {
+  kernHessPtr kernelHess = selectKernelHess(kernelName);
+  return(kernelHess(a, b, hyperParams, additionalParams));
+}

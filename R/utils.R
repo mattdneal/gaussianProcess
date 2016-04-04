@@ -85,3 +85,16 @@ speedtest.inv <- function(gp.obj){
   x.prime <- chol2inv(R) %*% y
   return(x.prime)
 }
+
+array.to.vec.coords <- function(x, d) {
+  x <- x - 1
+  out <- 0
+  for (k in seq_along(d)) {
+    if (k==1) {
+      out <- out + x[k]
+    } else {
+      out <- out + x[k] * prod(d[1:(k-1)])
+    }
+  }
+  return(out + 1)
+}

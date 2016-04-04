@@ -6,36 +6,56 @@ using namespace Rcpp;
 
 
 // ****************************************************************************
+// * Kernel Hyperparameter Names
+// ****************************************************************************
+
+CharacterVector getKernelHyperparamNames(std::string kernelName,
+                                         List additionalParams);
+
+// ****************************************************************************
 // * Squared Exponential
 // ****************************************************************************
 
 
-NumericVector squaredExponentialKernel(NumericVector a, 
-                                       NumericVector b, 
-                                       NumericVector hyperParams, 
+const CharacterVector squaredExponentialHPs = CharacterVector::create("l");
+
+NumericVector squaredExponentialKernel(NumericVector a,
+                                       NumericVector b,
+                                       NumericVector hyperParams,
                                        List additionalParams);
 
 
-NumericVector squaredExponentialKernelGrad(NumericVector a, 
-                                           NumericVector b, 
-                                           NumericVector hyperParams, 
+NumericVector squaredExponentialKernelGrad(NumericVector a,
+                                           NumericVector b,
+                                           NumericVector hyperParams,
                                            List additionalParams);
 
+NumericMatrix squaredExponentialKernelHess(NumericVector a,
+                                           NumericVector b,
+                                           NumericVector hyperParams,
+                                           List additionalParams);
 
 // ****************************************************************************
 // * Rational Quadratic
 // ****************************************************************************
 
+const CharacterVector rationalQuadraticHPs = CharacterVector::create("l", "alpha");
 
-NumericVector rationalQuadraticKernel(NumericVector a, 
-                                      NumericVector b, 
-                                      NumericVector hyperParams, 
+
+NumericVector rationalQuadraticKernel(NumericVector a,
+                                      NumericVector b,
+                                      NumericVector hyperParams,
                                       List additionalParams);
 
 
-NumericVector rationalQuadraticKernelGrad(NumericVector a, 
-                                          NumericVector b, 
-                                          NumericVector hyperParams, 
+NumericVector rationalQuadraticKernelGrad(NumericVector a,
+                                          NumericVector b,
+                                          NumericVector hyperParams,
+                                          List additionalParams);
+
+NumericMatrix rationalQuadraticKernelHess(NumericVector a,
+                                          NumericVector b,
+                                          NumericVector hyperParams,
                                           List additionalParams);
 
 
@@ -45,15 +65,15 @@ NumericVector rationalQuadraticKernelGrad(NumericVector a,
 
 
 
-NumericVector periodicKernel(NumericVector a, 
-                             NumericVector b, 
-                             NumericVector hyperParams, 
+NumericVector periodicKernel(NumericVector a,
+                             NumericVector b,
+                             NumericVector hyperParams,
                              List additionalParams);
 
 
-NumericVector periodicKernelGrad(NumericVector a, 
-                                 NumericVector b, 
-                                 NumericVector hyperParams, 
+NumericVector periodicKernelGrad(NumericVector a,
+                                 NumericVector b,
+                                 NumericVector hyperParams,
                                  List additionalParams);
 
 
@@ -64,15 +84,15 @@ NumericVector periodicKernelGrad(NumericVector a,
 
 
 
-NumericVector constantKernel(NumericVector a, 
-                             NumericVector b, 
-                             NumericVector hyperParams, 
+NumericVector constantKernel(NumericVector a,
+                             NumericVector b,
+                             NumericVector hyperParams,
                              List additionalParams);
 
 
-NumericVector constantKernelGrad(NumericVector a, 
-                                 NumericVector b, 
-                                 NumericVector hyperParams, 
+NumericVector constantKernelGrad(NumericVector a,
+                                 NumericVector b,
+                                 NumericVector hyperParams,
                                  List additionalParams);
 
 
@@ -82,15 +102,15 @@ NumericVector constantKernelGrad(NumericVector a,
 
 
 
-NumericVector oneDLinearKernel(NumericVector a, 
-                               NumericVector b, 
-                               NumericVector hyperParams, 
+NumericVector oneDLinearKernel(NumericVector a,
+                               NumericVector b,
+                               NumericVector hyperParams,
                                List additionalParams);
 
 
-NumericVector oneDLinearKernelGrad(NumericVector a, 
-                                   NumericVector b, 
-                                   NumericVector hyperParams, 
+NumericVector oneDLinearKernelGrad(NumericVector a,
+                                   NumericVector b,
+                                   NumericVector hyperParams,
                                    List additionalParams);
 
 
@@ -101,15 +121,15 @@ NumericVector oneDLinearKernelGrad(NumericVector a,
 
 
 
-NumericVector generalisedLinearKernel(NumericVector a, 
-                                      NumericVector b, 
-                                      NumericVector hyperParams, 
+NumericVector generalisedLinearKernel(NumericVector a,
+                                      NumericVector b,
+                                      NumericVector hyperParams,
                                       List additionalParams);
 
 
-NumericVector generalisedLinearKernelGrad(NumericVector a, 
-                                          NumericVector b, 
-                                          NumericVector hyperParams, 
+NumericVector generalisedLinearKernelGrad(NumericVector a,
+                                          NumericVector b,
+                                          NumericVector hyperParams,
                                           List additionalParams);
 
 // ****************************************************************************
@@ -118,15 +138,15 @@ NumericVector generalisedLinearKernelGrad(NumericVector a,
 
 
 
-NumericVector generalisedPolynomialKernel(NumericVector a, 
-                                          NumericVector b, 
-                                          NumericVector hyperParams, 
+NumericVector generalisedPolynomialKernel(NumericVector a,
+                                          NumericVector b,
+                                          NumericVector hyperParams,
                                           List additionalParams);
 
 
-NumericVector generalisedPolynomialKernelGrad(NumericVector a, 
-                                              NumericVector b, 
-                                              NumericVector hyperParams, 
+NumericVector generalisedPolynomialKernelGrad(NumericVector a,
+                                              NumericVector b,
+                                              NumericVector hyperParams,
                                               List additionalParams);
 
 // ****************************************************************************
@@ -135,15 +155,15 @@ NumericVector generalisedPolynomialKernelGrad(NumericVector a,
 
 
 
-NumericVector polynomialKernel(NumericVector a, 
-                               NumericVector b, 
-                               NumericVector hyperParams, 
+NumericVector polynomialKernel(NumericVector a,
+                               NumericVector b,
+                               NumericVector hyperParams,
                                List additionalParams);
 
 
-NumericVector polynomialKernelGrad(NumericVector a, 
-                                   NumericVector b, 
-                                   NumericVector hyperParams, 
+NumericVector polynomialKernelGrad(NumericVector a,
+                                   NumericVector b,
+                                   NumericVector hyperParams,
                                    List additionalParams);
 // ****************************************************************************
 // * Homogeneous Polynomial
@@ -151,35 +171,35 @@ NumericVector polynomialKernelGrad(NumericVector a,
 
 
 
-NumericVector homogeneousPolynomialKernel(NumericVector a, 
-                               NumericVector b, 
-                               NumericVector hyperParams, 
+NumericVector homogeneousPolynomialKernel(NumericVector a,
+                               NumericVector b,
+                               NumericVector hyperParams,
                                List additionalParams);
 
 
-NumericVector homogeneousPolynomialKernelGrad(NumericVector a, 
-                                   NumericVector b, 
-                                   NumericVector hyperParams, 
+NumericVector homogeneousPolynomialKernelGrad(NumericVector a,
+                                   NumericVector b,
+                                   NumericVector hyperParams,
                                    List additionalParams);
 
 // ****************************************************************************
 // * Changepoint
 // ****************************************************************************
 
-double sigmoid(double x, 
-               double changepoint, 
+double sigmoid(double x,
+               double changepoint,
                double transitionRate);
 
 
-NumericVector changepointKernel(NumericVector a, 
-                                       NumericVector b, 
-                                       NumericVector hyperParams, 
+NumericVector changepointKernel(NumericVector a,
+                                       NumericVector b,
+                                       NumericVector hyperParams,
                                        List additionalParams);
 
 
-NumericVector changepointKernelGrad(NumericVector a, 
-                                           NumericVector b, 
-                                           NumericVector hyperParams, 
+NumericVector changepointKernelGrad(NumericVector a,
+                                           NumericVector b,
+                                           NumericVector hyperParams,
                                            List additionalParams);
 
 
@@ -188,15 +208,15 @@ NumericVector changepointKernelGrad(NumericVector a,
 // ****************************************************************************
 
 
-NumericVector randomForestKernel(NumericVector a, 
-                                 NumericVector b, 
-                                 NumericVector hyperParams, 
+NumericVector randomForestKernel(NumericVector a,
+                                 NumericVector b,
+                                 NumericVector hyperParams,
                                  List additionalParams);
 
 
-NumericVector randomForestKernelGrad(NumericVector a, 
-                                     NumericVector b, 
-                                     NumericVector hyperParams, 
+NumericVector randomForestKernelGrad(NumericVector a,
+                                     NumericVector b,
+                                     NumericVector hyperParams,
                                      List additionalParams);
 
 // ****************************************************************************
@@ -204,28 +224,37 @@ NumericVector randomForestKernelGrad(NumericVector a,
 // ****************************************************************************
 
 
-NumericVector neuralNetworkKernel(NumericVector a, 
-                                  NumericVector b, 
-                                  NumericVector hyperParams, 
+NumericVector neuralNetworkKernel(NumericVector a,
+                                  NumericVector b,
+                                  NumericVector hyperParams,
                                   List additionalParams);
 
 
-NumericVector neuralNetworkKernelGrad(NumericVector a, 
-                                      NumericVector b, 
-                                      NumericVector hyperParams, 
+NumericVector neuralNetworkKernelGrad(NumericVector a,
+                                      NumericVector b,
+                                      NumericVector hyperParams,
                                       List additionalParams);
 
 // ****************************************************************************
 // * Kernel Selector
 // ****************************************************************************
 
-// This sets up our pointer for kernel functions so we can pass them around like party favours later on
-typedef NumericVector (*kernPtr)(NumericVector a, 
-                       NumericVector b, 
+// This sets up our pointer for kernel functions so we can pass them around later on
+typedef NumericVector (*kernPtr)(NumericVector a,
+                       NumericVector b,
                        NumericVector hyperParams,
                        List additionalParams);
 
 // This function selects between kernels. Remember to add new kernels in here.
 kernPtr selectKernel(std::string kernelName, bool returnGrad);
+
+// This sets up our pointer for kernel Hessian functions so we can pass them around later on
+typedef NumericMatrix (*kernHessPtr)(NumericVector a,
+                                     NumericVector b,
+                                     NumericVector hyperParams,
+                                     List additionalParams);
+
+// This function selects between kernels. Remember to add new kernels in here.
+kernHessPtr selectKernelHess(std::string kernelName);
 
 #endif

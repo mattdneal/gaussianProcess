@@ -50,6 +50,21 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// getCovarianceMatrixHessianArray
+NumericVector getCovarianceMatrixHessianArray(NumericMatrix x, std::string k, NumericVector sigma_n, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_getCovarianceMatrixHessianArray(SEXP xSEXP, SEXP kSEXP, SEXP sigma_nSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericMatrix >::type x(xSEXP);
+    Rcpp::traits::input_parameter< std::string >::type k(kSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sigma_n(sigma_nSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(getCovarianceMatrixHessianArray(x, k, sigma_n, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
 // callKernelByString
 NumericVector callKernelByString(std::string kernelName, NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
 RcppExport SEXP gaussianProcess_callKernelByString(SEXP kernelNameSEXP, SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
@@ -62,6 +77,48 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
     Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
     __result = Rcpp::wrap(callKernelByString(kernelName, a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
+// callKernelGradByString
+NumericVector callKernelGradByString(std::string kernelName, NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_callKernelGradByString(SEXP kernelNameSEXP, SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< std::string >::type kernelName(kernelNameSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(callKernelGradByString(kernelName, a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
+// callKernelHessByString
+NumericVector callKernelHessByString(std::string kernelName, NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_callKernelHessByString(SEXP kernelNameSEXP, SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< std::string >::type kernelName(kernelNameSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(callKernelHessByString(kernelName, a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
+// getKernelHyperparamNames
+CharacterVector getKernelHyperparamNames(std::string kernelName, List additionalParams);
+RcppExport SEXP gaussianProcess_getKernelHyperparamNames(SEXP kernelNameSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< std::string >::type kernelName(kernelNameSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(getKernelHyperparamNames(kernelName, additionalParams));
     return __result;
 END_RCPP
 }
@@ -90,6 +147,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
     Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
     __result = Rcpp::wrap(squaredExponentialKernelGrad(a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
+// squaredExponentialKernelHess
+NumericMatrix squaredExponentialKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_squaredExponentialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(squaredExponentialKernelHess(a, b, hyperParams, additionalParams));
     return __result;
 END_RCPP
 }

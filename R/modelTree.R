@@ -31,6 +31,28 @@ prod.grad <- function(a, b, a.grad, b.grad) {
   return(a1 * b.grad + b1 * a.grad)
 }
 
+sum.hess <- function(a.hess, b.hess, ...) {
+  return(a.hess + b.hess)
+}
+
+prod.hess <- function(a, b, a.grad, b.grad, a.hess, b.hess) {
+  a1 <- b1 <- b.hess
+  for (i in 1:dim(b.grad)[3]) {
+    for (j in 1:dim(b.grad)[3]) {
+        a1[, , i, j] <- a
+        b1[, , i, j] <- b
+    }
+  }
+
+  a.grad1 <- a.grad2 <- b.grad1 <- b.grad2 <- b.hess
+  for (i in 1:dim(b.grad)[3]) {
+    a.grad1[, , i, ] <- a.grad2[, , , i] <- a.grad
+    b.grad1[, , i, ] <- b.grad2[, , , i] <- b.grad
+  }
+
+  return(a.hess * b1 + a.grad1 * b.grad2 + a.grad2 * b.grad1 + a1 * b.hess)
+}
+
 #' Create an Empty Model Tree
 #'
 #' Creates an instance of a modelTree object with no associated kernels.
@@ -50,6 +72,10 @@ create.model.tree <- function() {
 
   model.tree$operation.grad.functions = list("+"=sum.grad,
                                              "*"=prod.grad
+  )
+
+  model.tree$operation.hess.functions = list("+"=sum.hess,
+                                             "*"=prod.hess
   )
 
   model.tree$tree <- data.frame(leftDaughter=numeric(0),

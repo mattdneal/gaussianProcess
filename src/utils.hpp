@@ -5,10 +5,10 @@
 using namespace Rcpp;
 
 /* ****************************************************************************
- *   Constants - this needs to be char* not std::string for Rcpp, and 
+ *   Constants - this needs to be char* not std::string for Rcpp, and
  *   "const char * const" makes both the char and the pointer constant.
  *****************************************************************************/
- 
+
 const char * const dimensionIndicesName = "dimensionIndices";
 const char * const dimensionIndexName = "dimensionIndex";
 
@@ -18,12 +18,16 @@ double kahanSum(NumericVector summands);
 
 double sumSQuaredDiffs(NumericVector a, NumericVector b);
 
-double sumSQuaredDiffsPartial(NumericVector a, 
-                              NumericVector b, 
+double sumSQuaredDiffsPartial(NumericVector a,
+                              NumericVector b,
                               List additionalParams);
 
 int bitWiseAnd(NumericVector a, NumericVector b);
 
 int bitWiseAnd(int a, int b);
+
+int arrToVecInd(std::vector<int> x, std::vector<int> d);
+
+void checkHPNames(CharacterVector expected, CharacterVector actual);
 
 #endif

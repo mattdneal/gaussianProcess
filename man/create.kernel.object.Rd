@@ -4,7 +4,7 @@
 \alias{create.kernel.object}
 \title{Create a kernel object}
 \usage{
-create.kernel.object(kernel, grad_function = NULL,
+create.kernel.object(kernel, grad_function = NULL, hess_function = NULL,
   hyperparam_names = character(0), additional_params = list())
 }
 \arguments{

@@ -7,6 +7,49 @@
 #include <string>
 using namespace Rcpp;
 
+// ****************************************************************************
+// * Kernel Hyperparameter Names
+// ****************************************************************************
+
+// [[Rcpp::export]]
+CharacterVector getKernelHyperparamNames(std::string kernelName,
+                                         List additionalParams) {
+  CharacterVector dummy;
+
+  if (kernelName == "squaredExponential") {
+    return(squaredExponentialHPs);
+  } else if (kernelName == "ARD") {
+    return(dummy);
+  } else if (kernelName == "inverseARD") {
+    return(dummy);
+  } else if (kernelName == "rationalQuadratic") {
+    return(rationalQuadraticHPs);
+  } else if (kernelName == "periodic") {
+    return(dummy);
+  } else if (kernelName == "constant") {
+    return(dummy);
+  } else if (kernelName == "generalisedLinear") {
+    return(dummy);
+  } else if (kernelName == "oneDLinear") {
+    return(dummy);
+  } else if (kernelName == "changepoint") {
+    return(dummy);
+  } else if (kernelName == "randomForest") {
+    return(dummy);
+  } else if (kernelName == "neuralNetwork") {
+    return(dummy);
+  } else if (kernelName == "generalisedNeuralNetwork") {
+    return(dummy);
+  } else if (kernelName == "generalisedPolynomial") {
+    return(dummy);
+  } else if (kernelName == "polynomial") {
+    return(dummy);
+  } else if (kernelName == "homogeneousPolynomial") {
+    return(dummy);
+  } else {
+    throw std::range_error("Incorrect kernel specified");
+  }
+}
 
 // ****************************************************************************
 // * Squared Exponential
@@ -17,8 +60,15 @@ NumericVector squaredExponentialKernel(NumericVector a,
                                        NumericVector b,
                                        NumericVector hyperParams,
                                        List additionalParams) {
+
+  checkHPNames(squaredExponentialHPs, hyperParams.names());
+
   double sum = sumSQuaredDiffsPartial(a, b, additionalParams);
-  double result = exp(-sum / ( 2 * pow(hyperParams["l"], 2)));
+
+  double l = hyperParams[0];
+
+  double result = exp(-sum / ( 2 * pow(l, 2)));
+
   return NumericVector::create(result);
 }
 
@@ -27,13 +77,39 @@ NumericVector squaredExponentialKernelGrad(NumericVector a,
                                            NumericVector b,
                                            NumericVector hyperParams,
                                            List additionalParams) {
+
+  checkHPNames(squaredExponentialHPs, hyperParams.names());
+
   double sum = sumSQuaredDiffsPartial(a, b, additionalParams);
+
+  double l = hyperParams[0];
+
   // Copy hyperParams for our output vector to ensure we return things in the right order
   NumericVector result = clone<NumericVector>(hyperParams);
-  result["l"] = sum / pow(hyperParams["l"], 3) *
-    exp(-sum/(2 * pow(hyperParams["l"], 2)));
+  result[0] = sum / pow(l, 3) *
+    exp(-sum/(2 * pow(l, 2)));
   return result;
 }
+
+// [[Rcpp::export]]
+NumericMatrix squaredExponentialKernelHess(NumericVector a,
+                                           NumericVector b,
+                                           NumericVector hyperParams,
+                                           List additionalParams) {
+
+  checkHPNames(squaredExponentialHPs, hyperParams.names());
+
+  double sum = sumSQuaredDiffsPartial(a, b, additionalParams);
+
+  double l = hyperParams[0];
+
+  NumericMatrix result(hyperParams.size());
+  result.attr("dimnames") = List::create(squaredExponentialHPs, squaredExponentialHPs);
+
+  result(0, 0) = sum / pow(l, 4) * exp(-sum / ( 2 * pow(l, 2))) * (sum / pow(l, 2) - 3);
+  return result;
+}
+
 
 // ****************************************************************************
 // * ARD
@@ -625,6 +701,7 @@ NumericVector generalNeuralNetworkKernelGrad(NumericVector a,
 
 // This function selects between kernels. Remember to add new kernels in here.
 kernPtr selectKernel(std::string kernelName, bool returnGrad) {
+
   if (kernelName == "squaredExponential") {
     if (returnGrad) {
       return(squaredExponentialKernelGrad);
@@ -719,3 +796,42 @@ kernPtr selectKernel(std::string kernelName, bool returnGrad) {
     throw std::range_error("Incorrect kernel specified");
   }
 }
+
+// This function selects between kernel hessians. Remember to add new kernels in here.
+kernHessPtr selectKernelHess(std::string kernelName) {
+  kernHessPtr dummyFun;
+  if (kernelName == "squaredExponential") {
+    return(squaredExponentialKernelHess);
+  } else if (kernelName == "ARD") {
+    return(dummyFun);
+  } else if (kernelName == "inverseARD") {
+    return(dummyFun);
+  } else if (kernelName == "rationalQuadratic") {
+    return(dummyFun);
+  } else if (kernelName == "periodic") {
+    return(dummyFun);
+  } else if (kernelName == "constant") {
+    return(dummyFun);
+  } else if (kernelName == "generalisedLinear") {
+    return(dummyFun);
+  } else if (kernelName == "oneDLinear") {
+    return(dummyFun);
+  } else if (kernelName == "changepoint") {
+    return(dummyFun);
+  } else if (kernelName == "randomForest") {
+    return(dummyFun);
+  } else if (kernelName == "neuralNetwork") {
+    return(dummyFun);
+  } else if (kernelName == "generalisedNeuralNetwork") {
+    return(dummyFun);
+  } else if (kernelName == "generalisedPolynomial") {
+    return(dummyFun);
+  } else if (kernelName == "polynomial") {
+    return(dummyFun);
+  } else if (kernelName == "homogeneousPolynomial") {
+    return(dummyFun);
+  } else {
+    throw std::range_error("Incorrect kernel specified");
+  }
+}
+
