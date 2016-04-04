@@ -35,6 +35,42 @@ NumericMatrix squaredExponentialKernelHess(NumericVector a,
                                            NumericVector hyperParams,
                                            List additionalParams);
 
+
+// ****************************************************************************
+// * ARD
+// ****************************************************************************
+
+NumericVector ARDKernel(NumericVector a,
+                        NumericVector b,
+                        NumericVector hyperParams,
+                        List additionalParams);
+
+NumericVector ARDKernelGrad(NumericVector a,
+                            NumericVector b,
+                            NumericVector hyperParams,
+                            List additionalParams);
+
+NumericMatrix ARDKernelHess(NumericVector a,
+                            NumericVector b,
+                            NumericVector hyperParams,
+                            List additionalParams);
+
+
+// ****************************************************************************
+// * Inverse ARD
+// ****************************************************************************
+
+NumericVector inverseARDKernel(NumericVector a,
+                               NumericVector b,
+                               NumericVector hyperParams,
+                               List additionalParams);
+
+NumericVector inverseARDKernelGrad(NumericVector a,
+                                   NumericVector b,
+                                   NumericVector hyperParams,
+                                   List additionalParams);
+
+
 // ****************************************************************************
 // * Rational Quadratic
 // ****************************************************************************

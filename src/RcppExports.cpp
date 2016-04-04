@@ -192,6 +192,20 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// ARDKernelHess
+NumericMatrix ARDKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_ARDKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(ARDKernelHess(a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
 // inverseARDKernel
 NumericVector inverseARDKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
 RcppExport SEXP gaussianProcess_inverseARDKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {

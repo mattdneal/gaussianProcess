@@ -87,7 +87,7 @@ test.kernel.functions <- function(kernel_string,
   k.grad.numeric <- create.numeric.grad(k)
   k.hess.numeric <- create.numeric.hessian.from.grad(k.grad)
 
-  results <- matrix(0, nrow=repetitions, ncol=6)
+  results <- matrix(0, nrow=repetitions, ncol=2)
   colnames(results) <- c("grad.diff", "hess.diff")
   out <- list(params=list(), results=results, outputs=list())
 
