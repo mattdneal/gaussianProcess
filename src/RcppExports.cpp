@@ -318,6 +318,20 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// periodicKernelHess
+NumericMatrix periodicKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_periodicKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(periodicKernelHess(a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
 // constantKernel
 NumericVector constantKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
 RcppExport SEXP gaussianProcess_constantKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
@@ -343,6 +357,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
     Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
     __result = Rcpp::wrap(constantKernelGrad(a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
+// constantKernelHess
+NumericMatrix constantKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_constantKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(constantKernelHess(a, b, hyperParams, additionalParams));
     return __result;
 END_RCPP
 }

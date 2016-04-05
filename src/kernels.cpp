@@ -274,7 +274,7 @@ NumericMatrix rationalQuadraticKernelHess(NumericVector a,
   checkHPNames(rationalQuadraticHPs, hyperParams.names());
 
   double sum = sumSQuaredDiffsPartial(a, b, additionalParams);
-  // Copy hyperParams for our output vector to ensure we return things in the right order
+
   NumericMatrix result(hyperParams.size());
   result.attr("dimnames") = List::create(hyperParams.names(), hyperParams.names());
 
@@ -318,14 +318,21 @@ NumericVector periodicKernel(NumericVector a,
                              NumericVector b,
                              NumericVector hyperParams,
                              List additionalParams) {
+
+  checkHPNames(periodicHPs, hyperParams.names());
+
   double sum = sumSQuaredDiffsPartial(a, b, additionalParams);
+
+  double l = hyperParams[0];
+  double p = hyperParams[1];
+
   double result = exp(-2 *
                       pow(sin( M_PI *
                                 pow(sum, 0.5) /
-                                hyperParams["p"]),
+                                p),
                           2
                       ) /
-                      pow(hyperParams["l"], 2)
+                      pow(l, 2)
                   );
   return NumericVector::create(result);
 }
@@ -335,13 +342,16 @@ NumericVector periodicKernelGrad(NumericVector a,
                                  NumericVector b,
                                  NumericVector hyperParams,
                                  List additionalParams) {
+
+  checkHPNames(periodicHPs, hyperParams.names());
+
   // Rcout << a(0) << "; " << b(0) << "; \n";
   double sum = sumSQuaredDiffsPartial(a, b, additionalParams);
   // Copy hyperParams for our output vector to ensure we return things in the right order
   NumericVector result = clone<NumericVector>(hyperParams);
 
-  double p = hyperParams["p"];
-  double l = hyperParams["l"];
+  double l = hyperParams[0];
+  double p = hyperParams[1];
   // Rcout << p << "; " << sigma << "; " << l << "; \n";
 
   double c = M_PI * pow(sum, 0.5) / p;
@@ -353,6 +363,47 @@ NumericVector periodicKernelGrad(NumericVector a,
   result["l"] = 4 * pow(f, 2) * pow(l, -3) * h;
   result["p"] = d * g * f * h;
   // Rcout << as<double>(result["sigma"]) << "; " << as<double>(result["l"]) << "; " << as<double>(result["p"]) << "; \n";
+  return result;
+}
+
+// [[Rcpp::export]]
+NumericMatrix periodicKernelHess(NumericVector a,
+                                 NumericVector b,
+                                 NumericVector hyperParams,
+                                 List additionalParams) {
+
+  checkHPNames(periodicHPs, hyperParams.names());
+
+  // Rcout << a(0) << "; " << b(0) << "; \n";
+  double sumSqrt = pow(sumSQuaredDiffsPartial(a, b, additionalParams), 0.5);
+
+  double k = periodicKernel(a, b, hyperParams, additionalParams)[0];
+
+  NumericMatrix result(hyperParams.size());
+  result.attr("dimnames") = List::create(hyperParams.names(), hyperParams.names());
+
+  double l = hyperParams[0];
+  double p = hyperParams[1];
+
+  double w = M_PI * sumSqrt / p;
+  double u = pow(sin(w), 2);
+
+  double w_p = -M_PI * sumSqrt * pow(p, -2);
+  double u_p = w_p * sin(2 * w);
+
+  double w_pp = 2 * M_PI * sumSqrt * pow(p, -3);
+  double u_pp = w_pp * sin(2 * w) + 2 * pow(w_p, 2) * cos(2 * w);
+
+  // k_ll
+  result(0, 0) = 4 * u * pow(l, -4) * k * (4 * u * pow(l, -2) - 3);
+
+  // k_lp
+  result(0, 1) = 4 * pow(l, -3) * u_p * k * (1 - 2 * u * pow(l, -2));
+  result(1, 0) = result(0, 1);
+
+  // k_pp
+  result(1, 1) = 2 * pow(l, -2) * k * (2 * pow(l, -2) * pow(u_p, 2) - u_pp);
+
   return result;
 }
 
@@ -368,7 +419,10 @@ NumericVector constantKernel(NumericVector a,
                              NumericVector b,
                              NumericVector hyperParams,
                              List additionalParams) {
-  double result = pow(hyperParams["sigma_0"], 2);
+
+  checkHPNames(constantHPs, hyperParams.names());
+
+  double result = pow(hyperParams[0], 2);
   return NumericVector::create(result);
 }
 
@@ -377,10 +431,30 @@ NumericVector constantKernelGrad(NumericVector a,
                                  NumericVector b,
                                  NumericVector hyperParams,
                                  List additionalParams) {
+
+  checkHPNames(constantHPs, hyperParams.names());
+
   // Copy hyperParams for our output vector to ensure we return things in the right order
   NumericVector result = clone<NumericVector>(hyperParams);
 
-  result["sigma_0"] = 2 * hyperParams["sigma_0"];
+  result[0] = 2 * hyperParams[0];
+  return result;
+}
+
+// [[Rcpp::export]]
+NumericMatrix constantKernelHess(NumericVector a,
+                                 NumericVector b,
+                                 NumericVector hyperParams,
+                                 List additionalParams) {
+
+  checkHPNames(constantHPs, hyperParams.names());
+
+  // Copy hyperParams for our output vector to ensure we return things in the right order
+  NumericMatrix result(hyperParams.size());
+  result.attr("dimnames") = List::create(hyperParams.names(), hyperParams.names());
+
+  result(0, 0) = 2;
+
   return result;
 }
 
@@ -905,9 +979,9 @@ kernHessPtr selectKernelHess(std::string kernelName) {
   } else if (kernelName == "rationalQuadratic") {
     return(rationalQuadraticKernelHess);
   } else if (kernelName == "periodic") {
-    return(dummyFun);
+    return(periodicKernelHess);
   } else if (kernelName == "constant") {
-    return(dummyFun);
+    return(constantKernelHess);
   } else if (kernelName == "generalisedLinear") {
     return(dummyFun);
   } else if (kernelName == "oneDLinear") {

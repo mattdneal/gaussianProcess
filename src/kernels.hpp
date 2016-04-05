@@ -104,6 +104,7 @@ NumericMatrix rationalQuadraticKernelHess(NumericVector a,
 // ****************************************************************************
 
 
+const CharacterVector periodicHPs = CharacterVector::create("l", "p");
 
 NumericVector periodicKernel(NumericVector a,
                              NumericVector b,
@@ -116,6 +117,11 @@ NumericVector periodicKernelGrad(NumericVector a,
                                  NumericVector hyperParams,
                                  List additionalParams);
 
+NumericMatrix periodicKernelHess(NumericVector a,
+                                 NumericVector b,
+                                 NumericVector hyperParams,
+                                 List additionalParams);
+
 
 
 // ****************************************************************************
@@ -123,6 +129,7 @@ NumericVector periodicKernelGrad(NumericVector a,
 // ****************************************************************************
 
 
+const CharacterVector constantHPs = CharacterVector::create("sigma_0");
 
 NumericVector constantKernel(NumericVector a,
                              NumericVector b,
@@ -131,6 +138,11 @@ NumericVector constantKernel(NumericVector a,
 
 
 NumericVector constantKernelGrad(NumericVector a,
+                                 NumericVector b,
+                                 NumericVector hyperParams,
+                                 List additionalParams);
+
+NumericMatrix constantKernelHess(NumericVector a,
                                  NumericVector b,
                                  NumericVector hyperParams,
                                  List additionalParams);

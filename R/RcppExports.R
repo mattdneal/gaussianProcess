@@ -114,12 +114,20 @@ periodicKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_periodicKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
+periodicKernelHess <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_periodicKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
 constantKernel <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_constantKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 constantKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_constantKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
+constantKernelHess <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_constantKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 oneDLinearKernel <- function(a, b, hyperParams, additionalParams) {
