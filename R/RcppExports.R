@@ -174,6 +174,10 @@ randomForestKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_randomForestKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
+randomForestKernelHess <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_randomForestKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
 neuralNetworkKernel <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_neuralNetworkKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }

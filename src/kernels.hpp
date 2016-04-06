@@ -271,6 +271,7 @@ NumericVector changepointKernelGrad(NumericVector a,
 // * Random Forest
 // ****************************************************************************
 
+const CharacterVector randomForestHPs = CharacterVector::create();
 
 NumericVector randomForestKernel(NumericVector a,
                                  NumericVector b,
@@ -279,6 +280,11 @@ NumericVector randomForestKernel(NumericVector a,
 
 
 NumericVector randomForestKernelGrad(NumericVector a,
+                                     NumericVector b,
+                                     NumericVector hyperParams,
+                                     List additionalParams);
+
+NumericMatrix randomForestKernelHess(NumericVector a,
                                      NumericVector b,
                                      NumericVector hyperParams,
                                      List additionalParams);

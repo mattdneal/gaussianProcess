@@ -816,6 +816,26 @@ NumericVector randomForestKernelGrad(NumericVector a,
   return result;
 }
 
+// [[Rcpp::export]]
+NumericMatrix randomForestKernelHess(NumericVector a,
+                                     NumericVector b,
+                                     NumericVector hyperParams,
+                                     List additionalParams) {
+
+  CharacterVector hpNames;
+  if (hyperParams.size() == 0) {
+    hpNames = CharacterVector::create();
+  } else {
+    hpNames = hyperParams.names();
+  }
+  checkHPNames(randomForestHPs, hpNames);
+
+  // Copy hyperParams for our output vector to ensure we return things in the right order
+  NumericMatrix result(hyperParams.size());
+
+  return result;
+}
+
 // ****************************************************************************
 // * Neural Network
 // ****************************************************************************
@@ -1085,7 +1105,7 @@ kernHessPtr selectKernelHess(std::string kernelName) {
   } else if (kernelName == "changepoint") {
     return(dummyFun); */
   } else if (kernelName == "randomForest") {
-    return(dummyFun);
+    return(randomForestKernelHess);
   } else if (kernelName == "neuralNetwork") {
     return(dummyFun);
   } else if (kernelName == "generalisedNeuralNetwork") {
