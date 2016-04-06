@@ -374,62 +374,6 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// oneDLinearKernel
-NumericVector oneDLinearKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_oneDLinearKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
-    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
-    __result = Rcpp::wrap(oneDLinearKernel(a, b, hyperParams, additionalParams));
-    return __result;
-END_RCPP
-}
-// oneDLinearKernelGrad
-NumericVector oneDLinearKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_oneDLinearKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
-    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
-    __result = Rcpp::wrap(oneDLinearKernelGrad(a, b, hyperParams, additionalParams));
-    return __result;
-END_RCPP
-}
-// generalisedLinearKernel
-NumericVector generalisedLinearKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_generalisedLinearKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
-    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
-    __result = Rcpp::wrap(generalisedLinearKernel(a, b, hyperParams, additionalParams));
-    return __result;
-END_RCPP
-}
-// generalisedLinearKernelGrad
-NumericVector generalisedLinearKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_generalisedLinearKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
-    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
-    __result = Rcpp::wrap(generalisedLinearKernelGrad(a, b, hyperParams, additionalParams));
-    return __result;
-END_RCPP
-}
 // generalisedPolynomialKernel
 NumericVector generalisedPolynomialKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
 RcppExport SEXP gaussianProcess_generalisedPolynomialKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
@@ -455,6 +399,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
     Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
     __result = Rcpp::wrap(generalisedPolynomialKernelGrad(a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
+// generalisedPolynomialKernelHess
+NumericMatrix generalisedPolynomialKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_generalisedPolynomialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(generalisedPolynomialKernelHess(a, b, hyperParams, additionalParams));
     return __result;
 END_RCPP
 }
@@ -486,6 +444,20 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
+// polynomialKernelHess
+NumericMatrix polynomialKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_polynomialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject __result;
+    Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
+    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
+    __result = Rcpp::wrap(polynomialKernelHess(a, b, hyperParams, additionalParams));
+    return __result;
+END_RCPP
+}
 // homogeneousPolynomialKernel
 NumericVector homogeneousPolynomialKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
 RcppExport SEXP gaussianProcess_homogeneousPolynomialKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
@@ -514,9 +486,9 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// changepointKernel
-NumericVector changepointKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_changepointKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+// homogeneousPolynomialKernelHess
+NumericMatrix homogeneousPolynomialKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
+RcppExport SEXP gaussianProcess_homogeneousPolynomialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -524,21 +496,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
     Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
-    __result = Rcpp::wrap(changepointKernel(a, b, hyperParams, additionalParams));
-    return __result;
-END_RCPP
-}
-// changepointKernelGrad
-NumericVector changepointKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_changepointKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< NumericVector >::type a(aSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type b(bSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type hyperParams(hyperParamsSEXP);
-    Rcpp::traits::input_parameter< List >::type additionalParams(additionalParamsSEXP);
-    __result = Rcpp::wrap(changepointKernelGrad(a, b, hyperParams, additionalParams));
+    __result = Rcpp::wrap(homogeneousPolynomialKernelHess(a, b, hyperParams, additionalParams));
     return __result;
 END_RCPP
 }

@@ -130,28 +130,16 @@ constantKernelHess <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_constantKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
-oneDLinearKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_oneDLinearKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
-}
-
-oneDLinearKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_oneDLinearKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
-}
-
-generalisedLinearKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_generalisedLinearKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
-}
-
-generalisedLinearKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_generalisedLinearKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
-}
-
 generalisedPolynomialKernel <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_generalisedPolynomialKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 generalisedPolynomialKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_generalisedPolynomialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
+generalisedPolynomialKernelHess <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_generalisedPolynomialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 polynomialKernel <- function(a, b, hyperParams, additionalParams) {
@@ -162,6 +150,10 @@ polynomialKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_polynomialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
+polynomialKernelHess <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_polynomialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
 homogeneousPolynomialKernel <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_homogeneousPolynomialKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
@@ -170,12 +162,8 @@ homogeneousPolynomialKernelGrad <- function(a, b, hyperParams, additionalParams)
     .Call('gaussianProcess_homogeneousPolynomialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
-changepointKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_changepointKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
-}
-
-changepointKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_changepointKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+homogeneousPolynomialKernelHess <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_homogeneousPolynomialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 randomForestKernel <- function(a, b, hyperParams, additionalParams) {

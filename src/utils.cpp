@@ -80,8 +80,10 @@ void checkHPNames(CharacterVector expected, CharacterVector actual) {
     throw("Too few hyperparameters passed");
   } else {
     // Using !is_false() to capture both TRUE and NA values
-    if (!is_false(any(expected != actual))) {
-      throw("Unexpected hyperparameter passed, or hyperparameters are in the wrong order.");
+    if (expected.size() > 0) {
+      if (!is_false(any(expected != actual))) {
+        throw("Unexpected hyperparameter passed, or hyperparameters are in the wrong order.");
+      }
     }
   }
 }

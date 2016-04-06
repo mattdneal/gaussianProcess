@@ -147,7 +147,7 @@ NumericMatrix constantKernelHess(NumericVector a,
                                  NumericVector hyperParams,
                                  List additionalParams);
 
-
+/*
 // ****************************************************************************
 // * One-D Linear
 // ****************************************************************************
@@ -183,12 +183,12 @@ NumericVector generalisedLinearKernelGrad(NumericVector a,
                                           NumericVector b,
                                           NumericVector hyperParams,
                                           List additionalParams);
-
+*/
 // ****************************************************************************
 // * Generalised Polynomial
 // ****************************************************************************
 
-
+const CharacterVector generalisedPolynomialHPs = CharacterVector::create("c", "l");
 
 NumericVector generalisedPolynomialKernel(NumericVector a,
                                           NumericVector b,
@@ -201,11 +201,16 @@ NumericVector generalisedPolynomialKernelGrad(NumericVector a,
                                               NumericVector hyperParams,
                                               List additionalParams);
 
+NumericMatrix generalisedPolynomialKernelHess(NumericVector a,
+                                              NumericVector b,
+                                              NumericVector hyperParams,
+                                              List additionalParams);
+
 // ****************************************************************************
 // * Polynomial
 // ****************************************************************************
 
-
+const CharacterVector polynomialHPs = CharacterVector::create("c");
 
 NumericVector polynomialKernel(NumericVector a,
                                NumericVector b,
@@ -217,11 +222,18 @@ NumericVector polynomialKernelGrad(NumericVector a,
                                    NumericVector b,
                                    NumericVector hyperParams,
                                    List additionalParams);
+
+NumericMatrix polynomialKernelHess(NumericVector a,
+                                   NumericVector b,
+                                   NumericVector hyperParams,
+                                   List additionalParams);
+
 // ****************************************************************************
 // * Homogeneous Polynomial
 // ****************************************************************************
 
 
+const CharacterVector homogeneousPolynomialHPs = CharacterVector::create();
 
 NumericVector homogeneousPolynomialKernel(NumericVector a,
                                NumericVector b,
@@ -233,7 +245,7 @@ NumericVector homogeneousPolynomialKernelGrad(NumericVector a,
                                    NumericVector b,
                                    NumericVector hyperParams,
                                    List additionalParams);
-
+/*
 // ****************************************************************************
 // * Changepoint
 // ****************************************************************************
@@ -253,7 +265,7 @@ NumericVector changepointKernelGrad(NumericVector a,
                                            NumericVector b,
                                            NumericVector hyperParams,
                                            List additionalParams);
-
+*/
 
 // ****************************************************************************
 // * Random Forest

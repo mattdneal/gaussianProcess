@@ -73,7 +73,7 @@ list_polynomial_kernels <- function(degrees=c(1,2),
     if (generalised) {
       kernel <- create.kernel.object(kernel="generalisedPolynomial",
                                      grad_function=NULL,
-                                     hyperparam_names=c("l", "c"),
+                                     hyperparam_names=c("c", "l"),
                                      additional_params=list(degree=degree))
       output[[paste("genPoly", degree, sep="_")]] <- kernel
     }

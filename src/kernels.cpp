@@ -449,7 +449,6 @@ NumericMatrix constantKernelHess(NumericVector a,
 
   checkHPNames(constantHPs, hyperParams.names());
 
-  // Copy hyperParams for our output vector to ensure we return things in the right order
   NumericMatrix result(hyperParams.size());
   result.attr("dimnames") = List::create(hyperParams.names(), hyperParams.names());
 
@@ -458,7 +457,7 @@ NumericMatrix constantKernelHess(NumericVector a,
   return result;
 }
 
-
+/*
 // ****************************************************************************
 // * One-D Linear
 // ****************************************************************************
@@ -524,7 +523,7 @@ NumericVector generalisedLinearKernelGrad(NumericVector a,
   }
   return result;
 }
-
+*/
 // ****************************************************************************
 // * Generalised Polynomial
 // ****************************************************************************
@@ -535,9 +534,12 @@ NumericVector generalisedPolynomialKernel(NumericVector a,
                                           NumericVector b,
                                           NumericVector hyperParams,
                                           List additionalParams) {
+
+  checkHPNames(generalisedPolynomialHPs, hyperParams.names());
+
   double degree = additionalParams["degree"];
-  double l = hyperParams["l"];
-  double c = hyperParams["c"];
+  double c = hyperParams[0];
+  double l = hyperParams[1];
 
   double result = pow(kahanSum(a * b) / pow(l, 2) + pow(c, 2), degree);
   return NumericVector::create(result);
@@ -548,20 +550,51 @@ NumericVector generalisedPolynomialKernelGrad(NumericVector a,
                                               NumericVector b,
                                               NumericVector hyperParams,
                                               List additionalParams) {
+
+  checkHPNames(generalisedPolynomialHPs, hyperParams.names());
+
   // Copy hyperParams for our output vector to ensure we return things in the right order
   NumericVector result = clone<NumericVector>(hyperParams);
 
   double degree = additionalParams["degree"];
-  double l = hyperParams["l"];
-  double c = hyperParams["c"];
+  double c = hyperParams[0];
+  double l = hyperParams[1];
 
-  result["c"] = 2 * c;
-  result["l"] = -2 * kahanSum(a * b) / pow(l, 3);
+  result[0] = 2 * c;
+  result[1] = -2 * kahanSum(a * b) / pow(l, 3);
   if (degree!=1) {
     double innerDeriv = degree * pow(kahanSum(a * b) / pow(l, 2) + pow(c, 2), degree - 1);
-    result["c"] = result["c"] * innerDeriv;
-    result["l"] = result["l"] * innerDeriv;
+    result[0] = result[0] * innerDeriv;
+    result[1] = result[1] * innerDeriv;
   }
+  return result;
+}
+
+// [[Rcpp::export]]
+NumericMatrix generalisedPolynomialKernelHess(NumericVector a,
+                                              NumericVector b,
+                                              NumericVector hyperParams,
+                                              List additionalParams) {
+
+  checkHPNames(generalisedPolynomialHPs, hyperParams.names());
+
+  NumericMatrix result(hyperParams.size());
+  result.attr("dimnames") = List::create(hyperParams.names(), hyperParams.names());
+
+  double d = additionalParams["degree"];
+  double c = hyperParams[0];
+  double l = hyperParams[1];
+
+  double dot = kahanSum(a * b);
+  double inner = dot * pow(l, -2) + pow(c, 2);
+
+
+  result(1, 1) = 6 * dot * pow(l, -4) * d * pow(inner, d - 1) +
+                 4 * pow(dot, 2) * pow(l, -6) * d * (d - 1) * pow(inner, d - 2);
+  result(1, 0) = -4 * c * d * dot * pow(l, -3) * (d - 1) * pow(inner, d - 2);
+  result(0, 1) = result(0, 1);
+  result(0, 0) = 2 * d * pow(inner, d - 1) + 4 * pow(c, 2) * d * (d - 1) * pow(inner, d - 2);
+
   return result;
 }
 
@@ -575,8 +608,11 @@ NumericVector polynomialKernel(NumericVector a,
                                NumericVector b,
                                NumericVector hyperParams,
                                List additionalParams) {
-  NumericVector polyHyperParams = clone<NumericVector>(hyperParams);
-  polyHyperParams["l"] = 1;
+
+  checkHPNames(polynomialHPs, hyperParams.names());
+
+  NumericVector polyHyperParams = NumericVector::create(_["c"] = hyperParams[0],
+                                                        _["l"] = 1);
 
   return generalisedPolynomialKernel(a, b, polyHyperParams, additionalParams);
 }
@@ -586,17 +622,40 @@ NumericVector polynomialKernelGrad(NumericVector a,
                                    NumericVector b,
                                    NumericVector hyperParams,
                                    List additionalParams) {
+
+  checkHPNames(polynomialHPs, hyperParams.names());
+
   // Copy hyperParams for our output vector to ensure we return things in the right order
   NumericVector result = clone<NumericVector>(hyperParams);
 
-  NumericVector polyHyperParams = clone<NumericVector>(hyperParams);
-  polyHyperParams["l"] = 1;
+  NumericVector polyHyperParams = NumericVector::create(_["c"] = hyperParams[0],
+                                                        _["l"] = 1);
 
   NumericVector genGrad = generalisedPolynomialKernelGrad(a, b, polyHyperParams, additionalParams);
 
-  result["c"] = genGrad["c"];
+  result[0] = genGrad[0];
   return result;
 }
+
+// [[Rcpp::export]]
+NumericMatrix polynomialKernelHess(NumericVector a,
+                                   NumericVector b,
+                                   NumericVector hyperParams,
+                                   List additionalParams) {
+
+  checkHPNames(polynomialHPs, hyperParams.names());
+
+  NumericMatrix result(hyperParams.size());
+
+  NumericVector polyHyperParams = NumericVector::create(_["c"] = hyperParams[0],
+                                                        _["l"] = 1);
+
+  NumericMatrix genHess = generalisedPolynomialKernelHess(a, b, polyHyperParams, additionalParams);
+
+  result(0, 0) = genHess(0, 0);
+  return result;
+}
+
 // ****************************************************************************
 // * Homogeneous Polynomial
 // ****************************************************************************
@@ -604,26 +663,63 @@ NumericVector polynomialKernelGrad(NumericVector a,
 
 // [[Rcpp::export]]
 NumericVector homogeneousPolynomialKernel(NumericVector a,
-                               NumericVector b,
-                               NumericVector hyperParams,
-                               List additionalParams) {
-  NumericVector polyHyperParams = clone<NumericVector>(hyperParams);
-  polyHyperParams["c"] = 0;
+                                          NumericVector b,
+                                          NumericVector hyperParams,
+                                          List additionalParams) {
+
+  CharacterVector hpNames;
+  if (hyperParams.size() == 0) {
+    hpNames = CharacterVector::create();
+  } else {
+    hpNames = hyperParams.names();
+  }
+  checkHPNames(homogeneousPolynomialHPs, hpNames);
+
+  NumericVector polyHyperParams = NumericVector::create(_["c"] = 0);
 
   return polynomialKernel(a, b, polyHyperParams, additionalParams);
 }
 
 // [[Rcpp::export]]
 NumericVector homogeneousPolynomialKernelGrad(NumericVector a,
-                                   NumericVector b,
-                                   NumericVector hyperParams,
-                                   List additionalParams) {
+                                              NumericVector b,
+                                              NumericVector hyperParams,
+                                              List additionalParams) {
+
+  CharacterVector hpNames;
+  if (hyperParams.size() == 0) {
+    hpNames = CharacterVector::create();
+  } else {
+    hpNames = hyperParams.names();
+  }
+  checkHPNames(homogeneousPolynomialHPs, hpNames);
+
   // Copy hyperParams for our output vector to ensure we return things in the right order
   NumericVector result = clone<NumericVector>(hyperParams);
 
   return result;
 }
 
+// [[Rcpp::export]]
+NumericMatrix homogeneousPolynomialKernelHess(NumericVector a,
+                                              NumericVector b,
+                                              NumericVector hyperParams,
+                                              List additionalParams) {
+
+  CharacterVector hpNames;
+  if (hyperParams.size() == 0) {
+    hpNames = CharacterVector::create();
+  } else {
+    hpNames = hyperParams.names();
+  }
+  checkHPNames(homogeneousPolynomialHPs, hpNames);
+
+  // Copy hyperParams for our output vector to ensure we return things in the right order
+  NumericMatrix result(hyperParams.size());
+
+  return result;
+}
+/*
 // ****************************************************************************
 // * Changepoint
 // ****************************************************************************
@@ -671,7 +767,7 @@ NumericVector changepointKernelGrad(NumericVector a,
   return result;
 }
 
-
+*/
 // ****************************************************************************
 // * Random Forest
 // ****************************************************************************
@@ -907,7 +1003,7 @@ kernPtr selectKernel(std::string kernelName, bool returnGrad) {
       return(constantKernelGrad);
     } else {
       return(constantKernel);
-    }
+    } /*
   } else if (kernelName == "generalisedLinear") {
     if (returnGrad) {
       return(generalisedLinearKernelGrad);
@@ -925,7 +1021,7 @@ kernPtr selectKernel(std::string kernelName, bool returnGrad) {
       return(changepointKernelGrad);
     } else {
       return(changepointKernel);
-    }
+    } */
   } else if (kernelName == "randomForest") {
     if (returnGrad) {
       return(randomForestKernelGrad);
@@ -981,13 +1077,13 @@ kernHessPtr selectKernelHess(std::string kernelName) {
   } else if (kernelName == "periodic") {
     return(periodicKernelHess);
   } else if (kernelName == "constant") {
-    return(constantKernelHess);
+    return(constantKernelHess); /*
   } else if (kernelName == "generalisedLinear") {
     return(dummyFun);
   } else if (kernelName == "oneDLinear") {
     return(dummyFun);
   } else if (kernelName == "changepoint") {
-    return(dummyFun);
+    return(dummyFun); */
   } else if (kernelName == "randomForest") {
     return(dummyFun);
   } else if (kernelName == "neuralNetwork") {
@@ -995,11 +1091,11 @@ kernHessPtr selectKernelHess(std::string kernelName) {
   } else if (kernelName == "generalisedNeuralNetwork") {
     return(dummyFun);
   } else if (kernelName == "generalisedPolynomial") {
-    return(dummyFun);
+    return(generalisedPolynomialKernelHess);
   } else if (kernelName == "polynomial") {
-    return(dummyFun);
+    return(polynomialKernelHess);
   } else if (kernelName == "homogeneousPolynomial") {
-    return(dummyFun);
+    return(homogeneousPolynomialKernelHess);
   } else {
     throw std::range_error("Incorrect kernel specified");
   }
