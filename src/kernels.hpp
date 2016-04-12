@@ -293,6 +293,7 @@ NumericMatrix randomForestKernelHess(NumericVector a,
 // * Neural Network
 // ****************************************************************************
 
+const CharacterVector neuralNetworkHPs = CharacterVector::create("sigma_0", "sigma");
 
 NumericVector neuralNetworkKernel(NumericVector a,
                                   NumericVector b,
@@ -301,6 +302,11 @@ NumericVector neuralNetworkKernel(NumericVector a,
 
 
 NumericVector neuralNetworkKernelGrad(NumericVector a,
+                                      NumericVector b,
+                                      NumericVector hyperParams,
+                                      List additionalParams);
+
+NumericMatrix neuralNetworkKernelHess(NumericVector a,
                                       NumericVector b,
                                       NumericVector hyperParams,
                                       List additionalParams);

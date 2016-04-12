@@ -186,6 +186,10 @@ neuralNetworkKernelGrad <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_neuralNetworkKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
+neuralNetworkKernelHess <- function(a, b, hyperParams, additionalParams) {
+    .Call('gaussianProcess_neuralNetworkKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+}
+
 generalNeuralNetworkKernel <- function(a, b, hyperParams, additionalParams) {
     .Call('gaussianProcess_generalNeuralNetworkKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }

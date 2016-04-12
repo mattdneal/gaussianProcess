@@ -646,6 +646,7 @@ NumericMatrix polynomialKernelHess(NumericVector a,
   checkHPNames(polynomialHPs, hyperParams.names());
 
   NumericMatrix result(hyperParams.size());
+  result.attr("dimnames") = List::create(hyperParams.names(), hyperParams.names());
 
   NumericVector polyHyperParams = NumericVector::create(_["c"] = hyperParams[0],
                                                         _["l"] = 1);
@@ -846,8 +847,10 @@ NumericVector neuralNetworkKernel(NumericVector a,
                                   NumericVector hyperParams,
                                   List additionalParams) {
 
-  double sigma0 = hyperParams["sigma_0"];
-  double sigma = hyperParams["sigma"];
+  checkHPNames(neuralNetworkHPs, hyperParams.names());
+
+  double sigma0 = hyperParams[0];
+  double sigma = hyperParams[1];
 
   double numerator = 2 * (pow(sigma0, 2) + sum(a * pow(sigma, 2) * b));
   double denominator = sqrt((1 + 2 * (pow(sigma0, 2) + sum(a * pow(sigma, 2) * a))) *
@@ -862,10 +865,13 @@ NumericVector neuralNetworkKernelGrad(NumericVector a,
                                       NumericVector b,
                                       NumericVector hyperParams,
                                       List additionalParams) {
+
+  checkHPNames(neuralNetworkHPs, hyperParams.names());
+
   // Copy hyperParams for our output vector to ensure we return things in the right order
   NumericVector result = clone<NumericVector>(hyperParams);
-  double sigma0 = hyperParams["sigma_0"];
-  double sigma = hyperParams["sigma"];
+  double sigma0 = hyperParams[0];
+  double sigma = hyperParams[1];
   //Rcout << "sigma0 " << sigma0 << " sigma " << sigma << "\n";
   double aSum = kahanSum(pow(a, 2));
   double bSum = kahanSum(pow(b, 2));
@@ -895,7 +901,7 @@ NumericVector neuralNetworkKernelGrad(NumericVector a,
   double denominator = M_PI * sqrt(1 - 4 * pow(sigma0_2 + sigma_2 * abSum, 2) /
                                      subdenominator1);
 
-  result["sigma_0"] = numerator_s0 / denominator;
+  result[0] = numerator_s0 / denominator;
 
 
   double numerator3 = 4 * sigma * abSum / sqrt(subdenominator1);
@@ -908,7 +914,102 @@ NumericVector neuralNetworkKernelGrad(NumericVector a,
 
   double numerator_s = 2 * (numerator3 - numerator4);
 
-  result["sigma"] = numerator_s / denominator;
+  result[1] = numerator_s / denominator;
+
+  return result;
+}
+
+// [[Rcpp::export]]
+NumericMatrix neuralNetworkKernelHess(NumericVector a,
+                                      NumericVector b,
+                                      NumericVector hyperParams,
+                                      List additionalParams) {
+
+  checkHPNames(neuralNetworkHPs, hyperParams.names());
+
+  NumericMatrix result(hyperParams.size());
+  result.attr("dimnames") = List::create(hyperParams.names(), hyperParams.names());
+
+  double sigma0 = hyperParams[0];
+  double sigma = hyperParams[1];
+
+  //Rcout << "sigma0 " << sigma0 << " sigma " << sigma << "\n";
+  double aSum = kahanSum(pow(a, 2));
+  double bSum = kahanSum(pow(b, 2));
+  double abSum = kahanSum(a * b);
+
+  //Rcout << "aSum " << aSum << " bSum " << bSum << " abSum " << abSum << "\n";
+
+  double sigma0_2 = pow(sigma0, 2);
+  double sigma_2 = pow(sigma, 2);
+
+  double u_aa = 2 * (sigma0_2 + sigma_2 * aSum);
+  double u_bb = 2 * (sigma0_2 + sigma_2 * bSum);
+  double u_ab = 2 * (sigma0_2 + sigma_2 * abSum);
+
+  Rcout << "u_aa " << u_aa << "\n";
+  Rcout << "u_bb " << u_bb << "\n";
+  Rcout << "u_ab " << u_ab << "\n";
+
+  double w = u_ab * pow(1 + u_aa, -0.5) * pow(1 + u_bb, -0.5);
+  Rcout << "test " << pow(2, -0.5) << "\n";
+  double w_sigma = 2 * sigma * (2 * abSum * pow(1 + u_aa, -0.5) * pow(1 + u_bb, -0.5)
+                                  - w * (aSum  / (1 + u_aa) + bSum / (1 + u_bb)));
+  double w_sigma0 = 2 * sigma0 * (2 * pow(1 + u_aa, -0.5) * pow(1 + u_bb, -0.5)
+                                    - w * (1 / (1 + u_aa) + 1 / (1 + u_bb)));
+
+  double w_sigma_sigma = 4 * abSum * pow(1 + u_aa, -0.5) * pow(1 + u_bb, -0.5)
+                         - 2 * w * (aSum  / (1 + u_aa) + bSum / (1 + u_bb))
+                         - 2 * sigma * (4 * sigma * abSum
+                                        * pow(1 + u_aa, -0.5) * pow(1 + u_bb, -0.5)
+                                        * (aSum  / (1 + u_aa) + bSum / (1 + u_bb))
+                                        + w_sigma * (aSum  / (1 + u_aa) + bSum / (1 + u_bb))
+                                        - 4 * sigma * w
+                                          * ( pow(aSum  / (1 + u_aa), 2)
+                                              + pow(bSum / (1 + u_bb), 2)
+                                            )
+                                       );
+
+  double w_sigma_sigma0 = 2 * sigma * (4 * sigma0
+                                         * (w * (aSum  / pow(1 + u_aa, 2) + bSum / pow(1 + u_bb, 2))
+                                            - abSum
+                                              * pow(1 + u_aa, -0.5)
+                                              * pow(1 + u_bb, -0.5)
+                                              * (1 / (1 + u_aa) + 1 / (1 + u_bb))
+                                            )
+                                         - w_sigma0 * (aSum  / (1 + u_aa) + bSum / (1 + u_bb))
+                                         );
+
+  double w_sigma0_sigma0 = 4 * pow(1 + u_aa, -0.5) * pow(1 + u_bb, -0.5)
+                           - 2 * w * (1 / (1 + u_aa) + 1 / (1 + u_bb))
+                           + 2 * sigma0 * (4 * sigma0 * (w * (1  / pow(1 + u_aa, 2)
+                                                              + 1 / pow(1 + u_bb, 2)
+                                                              )
+                                                         - pow(1 + u_aa, -0.5)
+                                                           * pow(1 + u_bb, -0.5)
+                                                           * (1 / (1 + u_aa) + 1 / (1 + u_bb))
+                                                        )
+                                             - w_sigma0 * (1 / (1 + u_aa) + 1 / (1 + u_bb))
+                                             );
+  Rcout << "w " << w << "\n";
+  Rcout << "w_sigma " << w_sigma << "\n";
+  Rcout << "w_sigma0 " << w_sigma0 << "\n";
+  Rcout << "w_sigma_sigma " << w_sigma_sigma << "\n";
+  Rcout << "w_sigma_sigma0 " << w_sigma_sigma0 << "\n";
+  Rcout << "w_sigma0_sigma0 " << w_sigma0_sigma0 << "\n";
+  // k_sigma0_sigma0
+  result(0, 0) = 2 / M_PI * w_sigma0_sigma0 * pow(1 - pow(w, 2), -0.5)
+                 + 2 / M_PI * pow(w_sigma0, 2) * w * pow(1 - pow(w, 2), -1.5);
+
+  // k_sigma_sigma
+  result(1, 1) = 2 / M_PI * w_sigma_sigma * pow(1 - pow(w, 2), -0.5)
+                 + 2 / M_PI * pow(w_sigma, 2) * w * pow(1 - pow(w, 2), -1.5);
+
+  // k_sigma_sigma0
+  result(0, 1) = 2 / M_PI * w_sigma_sigma0 * pow(1 - pow(w, 2), -0.5)
+                 + 2 / M_PI * w_sigma * w_sigma0 * w * pow(1 - pow(w, 2), -1.5);
+
+  result(1, 0) = result(0, 1);
 
   return result;
 }
@@ -1107,7 +1208,7 @@ kernHessPtr selectKernelHess(std::string kernelName) {
   } else if (kernelName == "randomForest") {
     return(randomForestKernelHess);
   } else if (kernelName == "neuralNetwork") {
-    return(dummyFun);
+    return(neuralNetworkKernelHess);
   } else if (kernelName == "generalisedNeuralNetwork") {
     return(dummyFun);
   } else if (kernelName == "generalisedPolynomial") {
