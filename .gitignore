@@ -7,3 +7,16 @@ src-x64/
 *.so
 *.dll
 caching.out
+/DiabetesBCGPLVM.RData
+/DiabetesBCGPLVM_normalPrior.RData
+/DiabetesStructuredGPLVM.RData
+/GPPresentationFigures.R
+/MaunaLoa.png
+/MaunaLoaSEPer.png
+/MaunaLoaSEPerSE.png
+/Rprof.out
+/co2-1.png
+/co2-2.png
+/co2-3.png
+/maunaLoaSE.png
+/parameterTuningContour.png
