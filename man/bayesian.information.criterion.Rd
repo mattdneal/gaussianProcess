@@ -4,7 +4,7 @@
 \alias{bayesian.information.criterion}
 \title{Calculate BIC of a GP}
 \usage{
-bayesian.information.criterion(gp.obj)
+bayesian.information.criterion(gp.obj, ...)
 }
 \arguments{
 \item{gp.obj}{A trained gaussianProcess object}
@@ -24,6 +24,6 @@ gp <- create.gaussian.process(x, y, mt)
 gp$fit.hyperparams(NA)
 }
 \seealso{
-\code{\link{bic.model.search}} and \code{\link{gaussianProcess}}
+\code{\link{model.search}} and \code{\link{gaussianProcess}}
 }
 

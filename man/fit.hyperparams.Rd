@@ -5,12 +5,13 @@
 \title{Fit hyperparameters for a GP using maximum likelihood optimisation}
 \usage{
 fit.hyperparams(gp, sigma.n.init = NA, hyper.params.init = NA,
-  random.init.gridsize = 50, resample.top.inits = TRUE,
-  resample.from = NULL, num.resamples = NULL, additional.optimx.runs = 1,
-  additional.par.perc.diff = 0.1, random.init.scale = 1,
-  abs.min.sigma.n = 0.001, abs.min.hyper.params = 0,
-  optimx.method = "L-BFGS-B", max.iterations = 10000,
-  optimx.starttests = FALSE, optimx.trace = 0, verbose = FALSE)
+  prior = get.uniform.prior(), random.init.gridsize = 50,
+  resample.top.inits = TRUE, resample.from = NULL, num.resamples = NULL,
+  additional.optimx.runs = 1, additional.par.perc.diff = 0.1,
+  random.init.scale = 1, abs.min.sigma.n = 0.001,
+  abs.min.hyper.params = 0, optimx.method = "L-BFGS-B",
+  max.iterations = 10000, optimx.starttests = FALSE, optimx.trace = 0,
+  verbose = FALSE)
 }
 \arguments{
 \item{gp}{a GaussianProcess object}

@@ -4,7 +4,7 @@
 \alias{bayesian.information.criterion.EDoF.eigen}
 \title{Calculate BIC of a GP (Effective DoF, eigenvalue decomposition)}
 \usage{
-bayesian.information.criterion.EDoF.eigen(gp.obj)
+bayesian.information.criterion.EDoF.eigen(gp.obj, ...)
 }
 \arguments{
 \item{gp.obj}{A trained gaussianProcess object}
@@ -25,6 +25,6 @@ gp <- create.gaussian.process(x, y, mt)
 gp$fit.hyperparams(NA)
 }
 \seealso{
-\code{\link{bic.model.search}} and \code{\link{gaussianProcess}}
+\code{\link{model.search}} and \code{\link{gaussianProcess}}
 }
 

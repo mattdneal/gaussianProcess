@@ -25,9 +25,9 @@ CharacterVector getKernelHyperparamNames(std::string kernelName,
   } else if (kernelName == "rationalQuadratic") {
     return(rationalQuadraticHPs);
   } else if (kernelName == "periodic") {
-    return(dummy);
+    return(periodicHPs);
   } else if (kernelName == "constant") {
-    return(dummy);
+    return(constantHPs);
   } else if (kernelName == "generalisedLinear") {
     return(dummy);
   } else if (kernelName == "oneDLinear") {
@@ -35,17 +35,17 @@ CharacterVector getKernelHyperparamNames(std::string kernelName,
   } else if (kernelName == "changepoint") {
     return(dummy);
   } else if (kernelName == "randomForest") {
-    return(dummy);
+    return(randomForestHPs);
   } else if (kernelName == "neuralNetwork") {
-    return(dummy);
+    return(neuralNetworkHPs);
   } else if (kernelName == "generalisedNeuralNetwork") {
     return(dummy);
   } else if (kernelName == "generalisedPolynomial") {
-    return(dummy);
+    return(generalisedPolynomialHPs);
   } else if (kernelName == "polynomial") {
-    return(dummy);
+    return(polynomialHPs);
   } else if (kernelName == "homogeneousPolynomial") {
-    return(dummy);
+    return(homogeneousPolynomialHPs);
   } else {
     throw std::range_error("Incorrect kernel specified");
   }
@@ -222,6 +222,39 @@ NumericMatrix inverseARDKernelHess(NumericVector a,
 // * Rational Quadratic
 // ****************************************************************************
 
+const double shiftedLogEps = pow(10, -6);
+
+// Use the mercator series to calculate the shifted log log(1+x) when x is near 0
+// [[Rcpp::export]]
+double shiftedLog(double x) {
+  double out;
+  if (abs(x) < shiftedLogEps) {
+    out = x;
+    double lastOut = 0;
+    int counter = 1;
+    while (out - lastOut != 0) {
+      counter++;
+      lastOut = out;
+      out = out + pow(-1, counter + 1) * pow(x, counter) / counter;
+    }
+  } else {
+    out = log(1 + x);
+  }
+  return(out);
+}
+
+// Use shiftedLog do to (1 + x)^a in a numerically stable way when x is small and a is large.
+// [[Rcpp::export]]
+double stablePow(double x, double a) {
+  double out;
+  if (abs(x) < shiftedLogEps) {
+    out = exp(a * shiftedLog(x));
+  } else {
+    out = pow(1 + x, a);
+  }
+  return(out);
+}
+
 // [[Rcpp::export]]
 NumericVector rationalQuadraticKernel(NumericVector a,
                                       NumericVector b,
@@ -233,7 +266,9 @@ NumericVector rationalQuadraticKernel(NumericVector a,
   double sum = sumSQuaredDiffsPartial(a, b, additionalParams);
   double l = hyperParams[0];
   double alpha = hyperParams[1];
-  double result = pow(1 + sum / ( 2 * alpha * pow(l, 2)), -alpha);
+
+  // If the base is close to 1 use the mercator series (shiftedLog) to do the calculation to avoid rounding errors
+  double result = stablePow(sum / ( 2 * pow(alpha, 2) * pow(l, 2)), -pow(alpha,2));
   return NumericVector::create(result);
 }
 
@@ -251,16 +286,11 @@ NumericVector rationalQuadraticKernelGrad(NumericVector a,
 
   double l = hyperParams[0];
   double alpha = hyperParams[1];
-  //Rcout << sigma << "; " << l << "; " << alpha << ";\n";
+  double k = rationalQuadraticKernel(a, b, hyperParams, additionalParams)[0];
 
-  double u = sum / (2 * pow(l, 2));
-  double v = 1 + u / alpha;
-  double w = sum / pow(l, 3);
-  double x = u / (alpha + u);
-  //Rcout << u << "; " << v << "; " << w << "; " << x << ";\n";
-
-  result[0] = w * pow(v, -(alpha + 1));
-  result[1] = pow(v, -alpha) * (x - log(v));
+  result[0] = sum * pow(l, -3) * stablePow(sum / ( 2 * pow(alpha, 2) * pow(l, 2)), -(pow(alpha,2) + 1));
+  result[1] = sum * pow(l, -2) / alpha * stablePow(sum / ( 2 * pow(alpha, 2) * pow(l, 2)), -(pow(alpha,2) + 1))
+              - 2 * alpha * k * shiftedLog(sum / ( 2 * pow(alpha, 2) * pow(l, 2)));
 
   return result;
 }
@@ -282,28 +312,32 @@ NumericMatrix rationalQuadraticKernelHess(NumericVector a,
   double alpha = hyperParams[1];
 
   double k = rationalQuadraticKernel(a, b, hyperParams, additionalParams)[0];
+  double kAlpha = rationalQuadraticKernelGrad(a, b, hyperParams, additionalParams)[1];
 
-  NumericVector kGrad = rationalQuadraticKernelGrad(a, b, hyperParams, additionalParams);
+  double u1 = stablePow(sum / (2 * pow(alpha, 2) * pow(l, 2)), -(pow(alpha, 2) + 1));
+  double u2 = stablePow(sum / (2 * pow(alpha, 2) * pow(l, 2)), -(pow(alpha, 2) + 2));
 
-  result(0, 0) = sum / pow(l, 4) *
-    pow(1 + sum / (2 * alpha * pow(l, 2)), -(alpha + 1)) *
-    (sum *
-      (alpha + 1) /
-      (alpha * pow(l, 2)) *
-      pow(1 + sum / (2 * alpha * pow(l, 2)), -1) -
-      3);
+  double tempLog = shiftedLog(sum / (2 * pow(alpha, 2) * pow(l, 2)));
 
-  result(0, 1) = kGrad[0] * (sum / (2 * alpha * pow(l, 2)  + sum) -
-                             log(1 + sum / (2 * alpha * pow(l, 2)))) +
-                 k * (2 * sum / (2 * alpha * pow(l, 3) + l * sum) -
-                      4 * alpha * l * sum / pow(2 * alpha * pow(l, 2) + sum, 2));
+  result(0, 0) = sum * pow(l, -4) * (sum
+                                       * pow(l * alpha, -2)
+                                       * (pow(alpha, 2) + 1)
+                                       * u2
+                                     - 3 * u1);
+
+  result(0, 1) = sum * pow(l, -3) * (sum
+                                       * pow(alpha, -3)
+                                       * pow(l, -2)
+                                       * (pow(alpha, 2) + 1)
+                                       * u2
+                                     - 2 * alpha * u1 * tempLog);
 
   result(1, 0) = result(0, 1);
 
-  double u = 2 * alpha * pow(l, 2) + sum;
+  result(1, 1) = sum * pow(l, -2) * u1 * (pow(alpha, -2) - 2 * tempLog)
+                  - 2 * tempLog * (k + kAlpha * alpha)
+                  + pow(sum, 2) * pow(alpha * l, -4) * (pow(alpha, 2) + 1) * u2;
 
-  result(1, 1) = k * (sum / u * (1 / alpha - 2 * pow(l, 2) / u) +
-                      pow(sum / u - log(1 + sum / (2 * alpha * pow(l, 2))), 2));
   return result;
 }
 
@@ -947,12 +981,12 @@ NumericMatrix neuralNetworkKernelHess(NumericVector a,
   double u_bb = 2 * (sigma0_2 + sigma_2 * bSum);
   double u_ab = 2 * (sigma0_2 + sigma_2 * abSum);
 
-  Rcout << "u_aa " << u_aa << "\n";
-  Rcout << "u_bb " << u_bb << "\n";
-  Rcout << "u_ab " << u_ab << "\n";
+  //Rcout << "u_aa " << u_aa << "\n";
+  //Rcout << "u_bb " << u_bb << "\n";
+  //Rcout << "u_ab " << u_ab << "\n";
 
   double w = u_ab * pow(1 + u_aa, -0.5) * pow(1 + u_bb, -0.5);
-  Rcout << "test " << pow(2, -0.5) << "\n";
+  //Rcout << "test " << pow(2, -0.5) << "\n";
   double w_sigma = 2 * sigma * (2 * abSum * pow(1 + u_aa, -0.5) * pow(1 + u_bb, -0.5)
                                   - w * (aSum  / (1 + u_aa) + bSum / (1 + u_bb)));
   double w_sigma0 = 2 * sigma0 * (2 * pow(1 + u_aa, -0.5) * pow(1 + u_bb, -0.5)
@@ -991,12 +1025,12 @@ NumericMatrix neuralNetworkKernelHess(NumericVector a,
                                                         )
                                              - w_sigma0 * (1 / (1 + u_aa) + 1 / (1 + u_bb))
                                              );
-  Rcout << "w " << w << "\n";
-  Rcout << "w_sigma " << w_sigma << "\n";
-  Rcout << "w_sigma0 " << w_sigma0 << "\n";
-  Rcout << "w_sigma_sigma " << w_sigma_sigma << "\n";
-  Rcout << "w_sigma_sigma0 " << w_sigma_sigma0 << "\n";
-  Rcout << "w_sigma0_sigma0 " << w_sigma0_sigma0 << "\n";
+  //Rcout << "w " << w << "\n";
+  //Rcout << "w_sigma " << w_sigma << "\n";
+  //Rcout << "w_sigma0 " << w_sigma0 << "\n";
+  //Rcout << "w_sigma_sigma " << w_sigma_sigma << "\n";
+  //Rcout << "w_sigma_sigma0 " << w_sigma_sigma0 << "\n";
+  //Rcout << "w_sigma0_sigma0 " << w_sigma0_sigma0 << "\n";
   // k_sigma0_sigma0
   result(0, 0) = 2 / M_PI * w_sigma0_sigma0 * pow(1 - pow(w, 2), -0.5)
                  + 2 / M_PI * pow(w_sigma0, 2) * w * pow(1 - pow(w, 2), -1.5);

@@ -29,9 +29,10 @@ optimx calls, but with a bit more experience I think this isn't actually necessa
 x <- rnorm(50)
 y <- sin(1/(x^2 + 0.15))
 mt <- create.model.tree.builtin()
-mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
-gp <- create.gaussian.process(x, y, mt)
-gp$fit.hyperparams(NA)
+mt <- insert.kernel.instance(mt, 1, "squaredExponential", NULL, hyper.params=c(l=NULL))
+k <- create.kernel.object.from.model.tree(mt)
+gp <- create.gaussian.process(x, y, k)
+gp <- fit.hyperparams(gp)
 
 }
 

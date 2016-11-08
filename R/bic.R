@@ -6,7 +6,7 @@
 #'
 #' @return The BIC value for the input GP object.
 #' @export
-#' @seealso \code{\link{bic.model.search}} and \code{\link{gaussianProcess}}
+#' @seealso \code{\link{model.search}} and \code{\link{gaussianProcess}}
 #'
 #' @importFrom cacheMan cached_call
 #'
@@ -17,7 +17,7 @@
 #' mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
 #' gp <- create.gaussian.process(x, y, mt)
 #' gp$fit.hyperparams(NA)
-bayesian.information.criterion <- function(gp.obj) {
+bayesian.information.criterion <- function(gp.obj, ...) {
   # Must be a trained GP
   log.L <- get.marginal.likelihood(gp=gp.obj,
                                    sigma.n=gp.obj$optimized.sigma.n,
@@ -36,7 +36,7 @@ bayesian.information.criterion <- function(gp.obj) {
 #'
 #' @return The BIC value for the input GP object.
 #' @export
-#' @seealso \code{\link{bic.model.search}} and \code{\link{gaussianProcess}}
+#' @seealso \code{\link{model.search}} and \code{\link{gaussianProcess}}
 #'
 #' @importFrom cacheMan cached_call
 #'
@@ -47,7 +47,7 @@ bayesian.information.criterion <- function(gp.obj) {
 #' mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
 #' gp <- create.gaussian.process(x, y, mt)
 #' gp$fit.hyperparams(NA)
-bayesian.information.criterion.EDoF <- function(gp.obj) {
+bayesian.information.criterion.EDoF <- function(gp.obj, ...) {
   # Must be a trained GP
   log.L <- get.marginal.likelihood(gp=gp.obj,
                                    sigma.n=gp.obj$optimized.sigma.n,
@@ -89,7 +89,7 @@ bayesian.information.criterion.EDoF <- function(gp.obj) {
 #'
 #' @return The BIC value for the input GP object.
 #' @export
-#' @seealso \code{\link{bic.model.search}} and \code{\link{gaussianProcess}}
+#' @seealso \code{\link{model.search}} and \code{\link{gaussianProcess}}
 #'
 #' @importFrom cacheMan cached_call
 #'
@@ -100,7 +100,7 @@ bayesian.information.criterion.EDoF <- function(gp.obj) {
 #' mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
 #' gp <- create.gaussian.process(x, y, mt)
 #' gp$fit.hyperparams(NA)
-bayesian.information.criterion.EDoF.eigen <- function(gp.obj) {
+bayesian.information.criterion.EDoF.eigen <- function(gp.obj, ...) {
   # Must be a trained GP
   log.L <- get.marginal.likelihood(gp=gp.obj,
                                    sigma.n=gp.obj$optimized.sigma.n,
@@ -126,23 +126,24 @@ bayesian.information.criterion.EDoF.eigen <- function(gp.obj) {
 #' Calculate the Laplace Approximation of the posterior log likelihood of a gp
 #'
 #' @param gp.obj A trained gaussianProcess object
+#' @param prior The prior over the hyperparameters
 #'
 #' @return The approximate posterior log likelihood for the input GP object.
 #' @export
-#' @seealso \code{\link{bic.model.search}} and \code{\link{gaussianProcess}}
-posterior.laplace.approximation <- function(gp.obj) {
+#' @seealso \code{\link{model.search}} and \code{\link{gaussianProcess}}
+posterior.laplace.approximation <- function(gp.obj, prior, ...) {
   # Must be a trained GP
   log.L <- get.marginal.likelihood(gp=gp.obj,
                                    sigma.n=gp.obj$optimized.sigma.n,
                                    hyper.params=gp.obj$optimized.hyperparams)
 
+  H <- -get.marginal.likelihood.hessian(gp=gp.obj,
+                                        sigma.n=gp.obj$optimized.sigma.n,
+                                        hyper.params=gp.obj$optimized.hyperparams)
 
-  log.det.H <- determinant(get.marginal.likelihood.hessian(gp=gp.obj,
-                                                           sigma.n=gp.obj$optimized.sigma.n,
-                                                           hyper.params=gp.obj$optimized.hyperparams),
-                           logarithm=TRUE)$modulus
+  log.prior.H <- -prior$log.prior.hessian(c(gp.obj$optimized.sigma.n, gp.obj$optimized.hyperparams))
 
-  attr(log.det.H, "logarithm") <- NULL
+  log.det.H <- as.numeric(determinant(H + log.prior.H, logarithm=TRUE)$modulus)
 
   return(-2 * log.L + log.det.H)
 }
@@ -169,7 +170,7 @@ posterior.laplace.approximation <- function(gp.obj) {
 #' x <- rnorm(50)
 #' y <- sin(1/(x^2 + 0.15))
 #' mt <- create.model.tree.builtin()
-#' gp <- bic.model.search(x, y, mt)
+#' gp <- model.search(x, y, mt)
 model.search <- function(x,
                          y,
                          base.model.tree,
@@ -208,12 +209,12 @@ model.search <- function(x,
     gp.obj <- result$gp
     model.name <- as.character(gp.obj$kernel$kernel)
 
-    model.score.vec[model.name] <- scoring.function(gp.obj)
+    model.score.vec[model.name] <- scoring.function(gp.obj, ...)
 
     scores[model.name, scoring.function.name] <- model.score.vec[model.name]
 
     for (i in names(alternate.scoring.functions)) {
-      scores[model.name, i] <- alternate.scoring.functions[[i]](gp.obj)
+      scores[model.name, i] <- alternate.scoring.functions[[i]](gp.obj, ...)
     }
 
     if (return.all.models) {
@@ -288,7 +289,7 @@ model.search <- function(x,
         }
 
         if (result$optimx.obj["convcode"] == 0) {
-          model.score <- scoring.function(gp.obj)
+          model.score <- scoring.function(gp.obj, ...)
 
           model.name <- paste(as.character(gp.obj$kernel$kernel), as.character(reset), sep=".")
 
@@ -297,7 +298,7 @@ model.search <- function(x,
           scores[model.name, scoring.function.name] <- model.score.vec[model.name]
 
           for (i in names(alternate.scoring.functions)) {
-            scores[model.name, i] <- alternate.scoring.functions[[i]](gp.obj)
+            scores[model.name, i] <- alternate.scoring.functions[[i]](gp.obj, ...)
           }
 
           if (return.all.models) {

@@ -4,10 +4,12 @@
 \alias{posterior.laplace.approximation}
 \title{Calculate Laplace Approximation of a GP}
 \usage{
-posterior.laplace.approximation(gp.obj)
+posterior.laplace.approximation(gp.obj, prior, ...)
 }
 \arguments{
 \item{gp.obj}{A trained gaussianProcess object}
+
+\item{prior}{The prior over the hyperparameters}
 }
 \value{
 The approximate posterior log likelihood for the input GP object.
@@ -16,6 +18,6 @@ The approximate posterior log likelihood for the input GP object.
 Calculate the Laplace Approximation of the posterior log likelihood of a gp
 }
 \seealso{
-\code{\link{bic.model.search}} and \code{\link{gaussianProcess}}
+\code{\link{model.search}} and \code{\link{gaussianProcess}}
 }
 

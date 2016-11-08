@@ -38,6 +38,6 @@ Perform Model Selection Using BIC
 x <- rnorm(50)
 y <- sin(1/(x^2 + 0.15))
 mt <- create.model.tree.builtin()
-gp <- bic.model.search(x, y, mt)
+gp <- model.search(x, y, mt)
 }
 

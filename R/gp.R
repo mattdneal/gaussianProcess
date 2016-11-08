@@ -31,9 +31,10 @@ rplaw <- function(n, alpha, x_0=1, x_1=10^6) {
 #' x <- rnorm(50)
 #' y <- sin(1/(x^2 + 0.15))
 #' mt <- create.model.tree.builtin()
-#' mt <- insert.kernel.instance(mt, 1, "SE", NULL, hyper.params=c(l=1))
-#' gp <- create.gaussian.process(x, y, mt)
-#' gp$fit.hyperparams(NA)
+#' mt <- insert.kernel.instance(mt, 1, "squaredExponential", NULL, hyper.params=c(l=NULL))
+#' k <- create.kernel.object.from.model.tree(mt)
+#' gp <- create.gaussian.process(x, y, k)
+#' gp <- fit.hyperparams(gp)
 #'
 create.gaussian.process <- function(x, y, kernel, cache=NULL) {
   gp.obj <- list()
@@ -356,12 +357,12 @@ get.marginal.likelihood.hessian <- function(gp, sigma.n, hyper.params) {
   return(log.marginal.likelihood.hess)
 }
 
-get.marginal.likelihood.optimx <- function(par, gp) {
-  -get.marginal.likelihood(gp=gp, sigma.n=par[1], hyper.params=par[-1])
+get.marginal.likelihood.optimx <- function(par, gp, prior=get.uniform.prior()) {
+  -get.marginal.likelihood(gp=gp, sigma.n=par[1], hyper.params=par[-1]) - prior$log.prior(par)
 }
 
-get.marginal.likelihood.grad.optimx <- function(par, gp) {
-  -get.marginal.likelihood.grad(gp=gp, sigma.n=par[1], hyper.params=par[-1])
+get.marginal.likelihood.grad.optimx <- function(par, gp, prior=get.uniform.prior()) {
+  -get.marginal.likelihood.grad(gp=gp, sigma.n=par[1], hyper.params=par[-1]) - prior$log.prior.grad(par)
 }
 
 optimize.gp.params <- function(gp,
@@ -370,7 +371,8 @@ optimize.gp.params <- function(gp,
                                max.iterations,
                                lower,
                                optimx.starttests,
-                               optimx.trace) {
+                               optimx.trace,
+                               prior=get.uniform.prior()) {
   return(optimx(init.params, get.marginal.likelihood.optimx,
                 gr=get.marginal.likelihood.grad.optimx,
                 method=optimx.method,
@@ -379,7 +381,8 @@ optimize.gp.params <- function(gp,
                 control=list(starttests=optimx.starttests,
                              trace=optimx.trace,
                              kkt=FALSE),
-                gp=gp))
+                gp=gp,
+                prior=prior))
 }
 
 #' Fit hyperparameters for a GP using maximum likelihood optimisation
@@ -422,6 +425,7 @@ optimize.gp.params <- function(gp,
 fit.hyperparams <- function(gp,
                             sigma.n.init=NA,
                             hyper.params.init=NA,
+                            prior=get.uniform.prior(),
                             random.init.gridsize=50,
                             resample.top.inits=TRUE,
                             resample.from=NULL,
@@ -478,7 +482,7 @@ fit.hyperparams <- function(gp,
     # errors between the kernel and sigma_n). To avoid this, we're going to convert errors into
     # warnings, pretend the bad parameters never happened, and carry on with our day.
     tryCatch({
-      log.likelihood.temp <- -get.marginal.likelihood.optimx(par=par, gp=gp)
+      log.likelihood.temp <- -get.marginal.likelihood.optimx(par=par, gp=gp, prior=prior)
 
       par.mat[i, ] <- par
       log.likelihood.vec[i] <- log.likelihood.temp
@@ -545,7 +549,7 @@ fit.hyperparams <- function(gp,
       # errors between the kernel and sigma_n). To avoid this, we're going to convert errors into
       # warnings, pretend the bad parameters never happened, and carry on with our day.
       tryCatch({
-        log.likelihood.temp <- -get.marginal.likelihood.optimx(par=par, gp=gp)
+        log.likelihood.temp <- -get.marginal.likelihood.optimx(par=par, gp=gp, prior=prior)
 
         resampled.log.likelihood.vec[i] <- log.likelihood.temp
 
@@ -576,7 +580,8 @@ fit.hyperparams <- function(gp,
                                    max.iterations,
                                    lower,
                                    optimx.starttests,
-                                   optimx.trace)
+                                   optimx.trace,
+                                   prior=prior)
 
   if (optimx.obj["convcode"] > 0) {
     warning("Did not converge!")
@@ -584,7 +589,7 @@ fit.hyperparams <- function(gp,
   } else {
     opt.pars <- as.numeric(optimx.obj)[1:(length(hyper.params.init) + 1)]
     names(opt.pars) <- c("sigma.n", names(hyper.params.init))
-    best.log.likelihood <- -get.marginal.likelihood.optimx(par=opt.pars, gp=gp)
+    best.log.likelihood <- -get.marginal.likelihood.optimx(par=opt.pars, gp=gp, prior=prior)
   }
 
   tested.par.indices <- c(1)
@@ -616,14 +621,15 @@ fit.hyperparams <- function(gp,
                                          max.iterations,
                                          lower,
                                          optimx.starttests,
-                                         optimx.trace)
+                                         optimx.trace,
+                                         prior=prior)
 
     if (new.optimx.obj["convcode"] > 0) {
       warning("Did not converge!")
     } else {
       trained.pars <- as.numeric(new.optimx.obj)[1:(length(hyper.params.init) + 1)]
       names(trained.pars) <- c("sigma.n", names(hyper.params.init))
-      new.log.likelihood <- -get.marginal.likelihood.optimx(par=trained.pars, gp=gp)
+      new.log.likelihood <- -get.marginal.likelihood.optimx(par=trained.pars, gp=gp, prior=prior)
       if (new.log.likelihood > best.log.likelihood) {
         best.log.likelihood <- new.log.likelihood
         opt.pars <- trained.pars
