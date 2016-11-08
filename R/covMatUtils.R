@@ -712,7 +712,18 @@ get_covariance_matrix_hess.function <- function(kernel,
 
 }
 
-
+#' Get predictive K* matrix
+#'
+#' This function returns the K* matrix of covariances between the
+#' training data and the data to predict
+#'
+#' @param kernel the kernel function
+#' @param data.to.predict numeric matrix of data to predict
+#' @param training.data the data used to train the Gaussian process
+#' @param hyper.params the kernel's hyperparameters
+#'
+#' @return a numeric matrix
+#' @export
 get_kstar_matrix <- function(kernel,
                              data.to.predict,
                              training.data,
@@ -721,7 +732,18 @@ get_kstar_matrix <- function(kernel,
   UseMethod("get_kstar_matrix")
 }
 
-
+#' Get predictive K* matrix
+#'
+#' This function returns the K* matrix of covariances between the
+#' training data and the data to predict for a Kernel object
+#'
+#' @param kernel the Kernel object
+#' @param data.to.predict numeric matrix of data to predict
+#' @param training.data the data used to train the Gaussian process
+#' @param hyper.params the kernel's hyperparameters
+#'
+#' @return a numeric matrix
+#' @export
 get_kstar_matrix.Kernel <- function(kernel,
                              data.to.predict,
                              training.data,
