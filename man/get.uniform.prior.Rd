@@ -2,7 +2,7 @@
 % Please edit documentation in R/priors.R
 \name{get.uniform.prior}
 \alias{get.uniform.prior}
-\title{Return an object representing a uniform prior over hyperparamaters}
+\title{Return an object representing a uniform prior over hyperparameters}
 \usage{
 get.uniform.prior()
 }
@@ -10,6 +10,6 @@ get.uniform.prior()
 a HyperParamPrior object
 }
 \description{
-Return an object representing a uniform prior over hyperparamaters
+Return an object representing a uniform prior over hyperparameters
 }
 
