@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // getCovarianceMatrixCpp
 NumericMatrix getCovarianceMatrixCpp(NumericMatrix x, Function k, NumericVector sigma_n, NumericVector hyperParams);
-RcppExport SEXP gaussianProcess_getCovarianceMatrixCpp(SEXP xSEXP, SEXP kSEXP, SEXP sigma_nSEXP, SEXP hyperParamsSEXP) {
+RcppExport SEXP _gaussianProcess_getCovarianceMatrixCpp(SEXP xSEXP, SEXP kSEXP, SEXP sigma_nSEXP, SEXP hyperParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -22,7 +22,7 @@ END_RCPP
 }
 // getCovarianceMatrixBuiltInCpp
 NumericMatrix getCovarianceMatrixBuiltInCpp(NumericMatrix x, std::string k, NumericVector sigma_n, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_getCovarianceMatrixBuiltInCpp(SEXP xSEXP, SEXP kSEXP, SEXP sigma_nSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_getCovarianceMatrixBuiltInCpp(SEXP xSEXP, SEXP kSEXP, SEXP sigma_nSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -37,7 +37,7 @@ END_RCPP
 }
 // getCovarianceMatrixGradArray
 NumericVector getCovarianceMatrixGradArray(NumericMatrix x, std::string k, NumericVector sigma_n, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_getCovarianceMatrixGradArray(SEXP xSEXP, SEXP kSEXP, SEXP sigma_nSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_getCovarianceMatrixGradArray(SEXP xSEXP, SEXP kSEXP, SEXP sigma_nSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,7 +52,7 @@ END_RCPP
 }
 // getCovarianceMatrixHessianArray
 NumericVector getCovarianceMatrixHessianArray(NumericMatrix x, std::string k, NumericVector sigma_n, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_getCovarianceMatrixHessianArray(SEXP xSEXP, SEXP kSEXP, SEXP sigma_nSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_getCovarianceMatrixHessianArray(SEXP xSEXP, SEXP kSEXP, SEXP sigma_nSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -67,7 +67,7 @@ END_RCPP
 }
 // callKernelByString
 NumericVector callKernelByString(std::string kernelName, NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_callKernelByString(SEXP kernelNameSEXP, SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_callKernelByString(SEXP kernelNameSEXP, SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -82,7 +82,7 @@ END_RCPP
 }
 // callKernelGradByString
 NumericVector callKernelGradByString(std::string kernelName, NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_callKernelGradByString(SEXP kernelNameSEXP, SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_callKernelGradByString(SEXP kernelNameSEXP, SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -97,7 +97,7 @@ END_RCPP
 }
 // callKernelHessByString
 NumericVector callKernelHessByString(std::string kernelName, NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_callKernelHessByString(SEXP kernelNameSEXP, SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_callKernelHessByString(SEXP kernelNameSEXP, SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -112,7 +112,7 @@ END_RCPP
 }
 // getKernelHyperparamNames
 CharacterVector getKernelHyperparamNames(std::string kernelName, List additionalParams);
-RcppExport SEXP gaussianProcess_getKernelHyperparamNames(SEXP kernelNameSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_getKernelHyperparamNames(SEXP kernelNameSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -124,7 +124,7 @@ END_RCPP
 }
 // squaredExponentialKernel
 NumericVector squaredExponentialKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_squaredExponentialKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_squaredExponentialKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -138,7 +138,7 @@ END_RCPP
 }
 // squaredExponentialKernelGrad
 NumericVector squaredExponentialKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_squaredExponentialKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_squaredExponentialKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -152,7 +152,7 @@ END_RCPP
 }
 // squaredExponentialKernelHess
 NumericMatrix squaredExponentialKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_squaredExponentialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_squaredExponentialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -166,7 +166,7 @@ END_RCPP
 }
 // ARDKernel
 NumericVector ARDKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_ARDKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_ARDKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -180,7 +180,7 @@ END_RCPP
 }
 // ARDKernelGrad
 NumericVector ARDKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_ARDKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_ARDKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -194,7 +194,7 @@ END_RCPP
 }
 // ARDKernelHess
 NumericMatrix ARDKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_ARDKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_ARDKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -208,7 +208,7 @@ END_RCPP
 }
 // inverseARDKernel
 NumericVector inverseARDKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_inverseARDKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_inverseARDKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -222,7 +222,7 @@ END_RCPP
 }
 // inverseARDKernelGrad
 NumericVector inverseARDKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_inverseARDKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_inverseARDKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -236,7 +236,7 @@ END_RCPP
 }
 // inverseARDKernelHess
 NumericMatrix inverseARDKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_inverseARDKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_inverseARDKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -250,7 +250,7 @@ END_RCPP
 }
 // shiftedLog
 double shiftedLog(double x);
-RcppExport SEXP gaussianProcess_shiftedLog(SEXP xSEXP) {
+RcppExport SEXP _gaussianProcess_shiftedLog(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -261,7 +261,7 @@ END_RCPP
 }
 // stablePow
 double stablePow(double x, double a);
-RcppExport SEXP gaussianProcess_stablePow(SEXP xSEXP, SEXP aSEXP) {
+RcppExport SEXP _gaussianProcess_stablePow(SEXP xSEXP, SEXP aSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -273,7 +273,7 @@ END_RCPP
 }
 // rationalQuadraticKernel
 NumericVector rationalQuadraticKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_rationalQuadraticKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_rationalQuadraticKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -287,7 +287,7 @@ END_RCPP
 }
 // rationalQuadraticKernelGrad
 NumericVector rationalQuadraticKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_rationalQuadraticKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_rationalQuadraticKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -301,7 +301,7 @@ END_RCPP
 }
 // rationalQuadraticKernelHess
 NumericMatrix rationalQuadraticKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_rationalQuadraticKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_rationalQuadraticKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -315,7 +315,7 @@ END_RCPP
 }
 // periodicKernel
 NumericVector periodicKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_periodicKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_periodicKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -329,7 +329,7 @@ END_RCPP
 }
 // periodicKernelGrad
 NumericVector periodicKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_periodicKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_periodicKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -343,7 +343,7 @@ END_RCPP
 }
 // periodicKernelHess
 NumericMatrix periodicKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_periodicKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_periodicKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -357,7 +357,7 @@ END_RCPP
 }
 // constantKernel
 NumericVector constantKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_constantKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_constantKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -371,7 +371,7 @@ END_RCPP
 }
 // constantKernelGrad
 NumericVector constantKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_constantKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_constantKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -385,7 +385,7 @@ END_RCPP
 }
 // constantKernelHess
 NumericMatrix constantKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_constantKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_constantKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -399,7 +399,7 @@ END_RCPP
 }
 // generalisedPolynomialKernel
 NumericVector generalisedPolynomialKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_generalisedPolynomialKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_generalisedPolynomialKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -413,7 +413,7 @@ END_RCPP
 }
 // generalisedPolynomialKernelGrad
 NumericVector generalisedPolynomialKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_generalisedPolynomialKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_generalisedPolynomialKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -427,7 +427,7 @@ END_RCPP
 }
 // generalisedPolynomialKernelHess
 NumericMatrix generalisedPolynomialKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_generalisedPolynomialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_generalisedPolynomialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -441,7 +441,7 @@ END_RCPP
 }
 // polynomialKernel
 NumericVector polynomialKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_polynomialKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_polynomialKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -455,7 +455,7 @@ END_RCPP
 }
 // polynomialKernelGrad
 NumericVector polynomialKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_polynomialKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_polynomialKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -469,7 +469,7 @@ END_RCPP
 }
 // polynomialKernelHess
 NumericMatrix polynomialKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_polynomialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_polynomialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -483,7 +483,7 @@ END_RCPP
 }
 // homogeneousPolynomialKernel
 NumericVector homogeneousPolynomialKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_homogeneousPolynomialKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_homogeneousPolynomialKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -497,7 +497,7 @@ END_RCPP
 }
 // homogeneousPolynomialKernelGrad
 NumericVector homogeneousPolynomialKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_homogeneousPolynomialKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_homogeneousPolynomialKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -511,7 +511,7 @@ END_RCPP
 }
 // homogeneousPolynomialKernelHess
 NumericMatrix homogeneousPolynomialKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_homogeneousPolynomialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_homogeneousPolynomialKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -525,7 +525,7 @@ END_RCPP
 }
 // randomForestKernel
 NumericVector randomForestKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_randomForestKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_randomForestKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -539,7 +539,7 @@ END_RCPP
 }
 // randomForestKernelGrad
 NumericVector randomForestKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_randomForestKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_randomForestKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -553,7 +553,7 @@ END_RCPP
 }
 // randomForestKernelHess
 NumericMatrix randomForestKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_randomForestKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_randomForestKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -567,7 +567,7 @@ END_RCPP
 }
 // neuralNetworkKernel
 NumericVector neuralNetworkKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_neuralNetworkKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_neuralNetworkKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -581,7 +581,7 @@ END_RCPP
 }
 // neuralNetworkKernelGrad
 NumericVector neuralNetworkKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_neuralNetworkKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_neuralNetworkKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -595,7 +595,7 @@ END_RCPP
 }
 // neuralNetworkKernelHess
 NumericMatrix neuralNetworkKernelHess(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_neuralNetworkKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_neuralNetworkKernelHess(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -609,7 +609,7 @@ END_RCPP
 }
 // generalNeuralNetworkKernel
 NumericVector generalNeuralNetworkKernel(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_generalNeuralNetworkKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_generalNeuralNetworkKernel(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -623,7 +623,7 @@ END_RCPP
 }
 // generalNeuralNetworkKernelGrad
 NumericVector generalNeuralNetworkKernelGrad(NumericVector a, NumericVector b, NumericVector hyperParams, List additionalParams);
-RcppExport SEXP gaussianProcess_generalNeuralNetworkKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_generalNeuralNetworkKernelGrad(SEXP aSEXP, SEXP bSEXP, SEXP hyperParamsSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -637,7 +637,7 @@ END_RCPP
 }
 // getTreeHeight
 NumericVector getTreeHeight(NumericMatrix tree);
-RcppExport SEXP gaussianProcess_getTreeHeight(SEXP treeSEXP) {
+RcppExport SEXP _gaussianProcess_getTreeHeight(SEXP treeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -648,7 +648,7 @@ END_RCPP
 }
 // navigateRFTree
 NumericVector navigateRFTree(NumericMatrix tree, NumericVector data, IntegerVector isFactor, NumericVector inputHeight);
-RcppExport SEXP gaussianProcess_navigateRFTree(SEXP treeSEXP, SEXP dataSEXP, SEXP isFactorSEXP, SEXP inputHeightSEXP) {
+RcppExport SEXP _gaussianProcess_navigateRFTree(SEXP treeSEXP, SEXP dataSEXP, SEXP isFactorSEXP, SEXP inputHeightSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -662,7 +662,7 @@ END_RCPP
 }
 // kahanSum
 double kahanSum(NumericVector summands);
-RcppExport SEXP gaussianProcess_kahanSum(SEXP summandsSEXP) {
+RcppExport SEXP _gaussianProcess_kahanSum(SEXP summandsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -673,7 +673,7 @@ END_RCPP
 }
 // sumSQuaredDiffs
 double sumSQuaredDiffs(NumericVector a, NumericVector b);
-RcppExport SEXP gaussianProcess_sumSQuaredDiffs(SEXP aSEXP, SEXP bSEXP) {
+RcppExport SEXP _gaussianProcess_sumSQuaredDiffs(SEXP aSEXP, SEXP bSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -685,7 +685,7 @@ END_RCPP
 }
 // sumSQuaredDiffsPartial
 double sumSQuaredDiffsPartial(NumericVector a, NumericVector b, List additionalParams);
-RcppExport SEXP gaussianProcess_sumSQuaredDiffsPartial(SEXP aSEXP, SEXP bSEXP, SEXP additionalParamsSEXP) {
+RcppExport SEXP _gaussianProcess_sumSQuaredDiffsPartial(SEXP aSEXP, SEXP bSEXP, SEXP additionalParamsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -698,7 +698,7 @@ END_RCPP
 }
 // bitWiseAnd
 int bitWiseAnd(NumericVector a, NumericVector b);
-RcppExport SEXP gaussianProcess_bitWiseAnd(SEXP aSEXP, SEXP bSEXP) {
+RcppExport SEXP _gaussianProcess_bitWiseAnd(SEXP aSEXP, SEXP bSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -707,4 +707,64 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(bitWiseAnd(a, b));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_gaussianProcess_getCovarianceMatrixCpp", (DL_FUNC) &_gaussianProcess_getCovarianceMatrixCpp, 4},
+    {"_gaussianProcess_getCovarianceMatrixBuiltInCpp", (DL_FUNC) &_gaussianProcess_getCovarianceMatrixBuiltInCpp, 5},
+    {"_gaussianProcess_getCovarianceMatrixGradArray", (DL_FUNC) &_gaussianProcess_getCovarianceMatrixGradArray, 5},
+    {"_gaussianProcess_getCovarianceMatrixHessianArray", (DL_FUNC) &_gaussianProcess_getCovarianceMatrixHessianArray, 5},
+    {"_gaussianProcess_callKernelByString", (DL_FUNC) &_gaussianProcess_callKernelByString, 5},
+    {"_gaussianProcess_callKernelGradByString", (DL_FUNC) &_gaussianProcess_callKernelGradByString, 5},
+    {"_gaussianProcess_callKernelHessByString", (DL_FUNC) &_gaussianProcess_callKernelHessByString, 5},
+    {"_gaussianProcess_getKernelHyperparamNames", (DL_FUNC) &_gaussianProcess_getKernelHyperparamNames, 2},
+    {"_gaussianProcess_squaredExponentialKernel", (DL_FUNC) &_gaussianProcess_squaredExponentialKernel, 4},
+    {"_gaussianProcess_squaredExponentialKernelGrad", (DL_FUNC) &_gaussianProcess_squaredExponentialKernelGrad, 4},
+    {"_gaussianProcess_squaredExponentialKernelHess", (DL_FUNC) &_gaussianProcess_squaredExponentialKernelHess, 4},
+    {"_gaussianProcess_ARDKernel", (DL_FUNC) &_gaussianProcess_ARDKernel, 4},
+    {"_gaussianProcess_ARDKernelGrad", (DL_FUNC) &_gaussianProcess_ARDKernelGrad, 4},
+    {"_gaussianProcess_ARDKernelHess", (DL_FUNC) &_gaussianProcess_ARDKernelHess, 4},
+    {"_gaussianProcess_inverseARDKernel", (DL_FUNC) &_gaussianProcess_inverseARDKernel, 4},
+    {"_gaussianProcess_inverseARDKernelGrad", (DL_FUNC) &_gaussianProcess_inverseARDKernelGrad, 4},
+    {"_gaussianProcess_inverseARDKernelHess", (DL_FUNC) &_gaussianProcess_inverseARDKernelHess, 4},
+    {"_gaussianProcess_shiftedLog", (DL_FUNC) &_gaussianProcess_shiftedLog, 1},
+    {"_gaussianProcess_stablePow", (DL_FUNC) &_gaussianProcess_stablePow, 2},
+    {"_gaussianProcess_rationalQuadraticKernel", (DL_FUNC) &_gaussianProcess_rationalQuadraticKernel, 4},
+    {"_gaussianProcess_rationalQuadraticKernelGrad", (DL_FUNC) &_gaussianProcess_rationalQuadraticKernelGrad, 4},
+    {"_gaussianProcess_rationalQuadraticKernelHess", (DL_FUNC) &_gaussianProcess_rationalQuadraticKernelHess, 4},
+    {"_gaussianProcess_periodicKernel", (DL_FUNC) &_gaussianProcess_periodicKernel, 4},
+    {"_gaussianProcess_periodicKernelGrad", (DL_FUNC) &_gaussianProcess_periodicKernelGrad, 4},
+    {"_gaussianProcess_periodicKernelHess", (DL_FUNC) &_gaussianProcess_periodicKernelHess, 4},
+    {"_gaussianProcess_constantKernel", (DL_FUNC) &_gaussianProcess_constantKernel, 4},
+    {"_gaussianProcess_constantKernelGrad", (DL_FUNC) &_gaussianProcess_constantKernelGrad, 4},
+    {"_gaussianProcess_constantKernelHess", (DL_FUNC) &_gaussianProcess_constantKernelHess, 4},
+    {"_gaussianProcess_generalisedPolynomialKernel", (DL_FUNC) &_gaussianProcess_generalisedPolynomialKernel, 4},
+    {"_gaussianProcess_generalisedPolynomialKernelGrad", (DL_FUNC) &_gaussianProcess_generalisedPolynomialKernelGrad, 4},
+    {"_gaussianProcess_generalisedPolynomialKernelHess", (DL_FUNC) &_gaussianProcess_generalisedPolynomialKernelHess, 4},
+    {"_gaussianProcess_polynomialKernel", (DL_FUNC) &_gaussianProcess_polynomialKernel, 4},
+    {"_gaussianProcess_polynomialKernelGrad", (DL_FUNC) &_gaussianProcess_polynomialKernelGrad, 4},
+    {"_gaussianProcess_polynomialKernelHess", (DL_FUNC) &_gaussianProcess_polynomialKernelHess, 4},
+    {"_gaussianProcess_homogeneousPolynomialKernel", (DL_FUNC) &_gaussianProcess_homogeneousPolynomialKernel, 4},
+    {"_gaussianProcess_homogeneousPolynomialKernelGrad", (DL_FUNC) &_gaussianProcess_homogeneousPolynomialKernelGrad, 4},
+    {"_gaussianProcess_homogeneousPolynomialKernelHess", (DL_FUNC) &_gaussianProcess_homogeneousPolynomialKernelHess, 4},
+    {"_gaussianProcess_randomForestKernel", (DL_FUNC) &_gaussianProcess_randomForestKernel, 4},
+    {"_gaussianProcess_randomForestKernelGrad", (DL_FUNC) &_gaussianProcess_randomForestKernelGrad, 4},
+    {"_gaussianProcess_randomForestKernelHess", (DL_FUNC) &_gaussianProcess_randomForestKernelHess, 4},
+    {"_gaussianProcess_neuralNetworkKernel", (DL_FUNC) &_gaussianProcess_neuralNetworkKernel, 4},
+    {"_gaussianProcess_neuralNetworkKernelGrad", (DL_FUNC) &_gaussianProcess_neuralNetworkKernelGrad, 4},
+    {"_gaussianProcess_neuralNetworkKernelHess", (DL_FUNC) &_gaussianProcess_neuralNetworkKernelHess, 4},
+    {"_gaussianProcess_generalNeuralNetworkKernel", (DL_FUNC) &_gaussianProcess_generalNeuralNetworkKernel, 4},
+    {"_gaussianProcess_generalNeuralNetworkKernelGrad", (DL_FUNC) &_gaussianProcess_generalNeuralNetworkKernelGrad, 4},
+    {"_gaussianProcess_getTreeHeight", (DL_FUNC) &_gaussianProcess_getTreeHeight, 1},
+    {"_gaussianProcess_navigateRFTree", (DL_FUNC) &_gaussianProcess_navigateRFTree, 4},
+    {"_gaussianProcess_kahanSum", (DL_FUNC) &_gaussianProcess_kahanSum, 1},
+    {"_gaussianProcess_sumSQuaredDiffs", (DL_FUNC) &_gaussianProcess_sumSQuaredDiffs, 2},
+    {"_gaussianProcess_sumSQuaredDiffsPartial", (DL_FUNC) &_gaussianProcess_sumSQuaredDiffsPartial, 3},
+    {"_gaussianProcess_bitWiseAnd", (DL_FUNC) &_gaussianProcess_bitWiseAnd, 2},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_gaussianProcess(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

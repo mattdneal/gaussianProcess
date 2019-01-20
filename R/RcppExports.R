@@ -2,19 +2,19 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 getCovarianceMatrixCpp <- function(x, k, sigma_n, hyperParams) {
-    .Call('gaussianProcess_getCovarianceMatrixCpp', PACKAGE = 'gaussianProcess', x, k, sigma_n, hyperParams)
+    .Call('_gaussianProcess_getCovarianceMatrixCpp', PACKAGE = 'gaussianProcess', x, k, sigma_n, hyperParams)
 }
 
 getCovarianceMatrixBuiltInCpp <- function(x, k, sigma_n, hyperParams, additionalParams) {
-    .Call('gaussianProcess_getCovarianceMatrixBuiltInCpp', PACKAGE = 'gaussianProcess', x, k, sigma_n, hyperParams, additionalParams)
+    .Call('_gaussianProcess_getCovarianceMatrixBuiltInCpp', PACKAGE = 'gaussianProcess', x, k, sigma_n, hyperParams, additionalParams)
 }
 
 getCovarianceMatrixGradArray <- function(x, k, sigma_n, hyperParams, additionalParams) {
-    .Call('gaussianProcess_getCovarianceMatrixGradArray', PACKAGE = 'gaussianProcess', x, k, sigma_n, hyperParams, additionalParams)
+    .Call('_gaussianProcess_getCovarianceMatrixGradArray', PACKAGE = 'gaussianProcess', x, k, sigma_n, hyperParams, additionalParams)
 }
 
 getCovarianceMatrixHessianArray <- function(x, k, sigma_n, hyperParams, additionalParams) {
-    .Call('gaussianProcess_getCovarianceMatrixHessianArray', PACKAGE = 'gaussianProcess', x, k, sigma_n, hyperParams, additionalParams)
+    .Call('_gaussianProcess_getCovarianceMatrixHessianArray', PACKAGE = 'gaussianProcess', x, k, sigma_n, hyperParams, additionalParams)
 }
 
 #' Select Built-in C++ Kernels by Name
@@ -43,190 +43,190 @@ getCovarianceMatrixHessianArray <- function(x, k, sigma_n, hyperParams, addition
 #'
 #' @export
 callKernelByString <- function(kernelName, a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_callKernelByString', PACKAGE = 'gaussianProcess', kernelName, a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_callKernelByString', PACKAGE = 'gaussianProcess', kernelName, a, b, hyperParams, additionalParams)
 }
 
 callKernelGradByString <- function(kernelName, a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_callKernelGradByString', PACKAGE = 'gaussianProcess', kernelName, a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_callKernelGradByString', PACKAGE = 'gaussianProcess', kernelName, a, b, hyperParams, additionalParams)
 }
 
 callKernelHessByString <- function(kernelName, a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_callKernelHessByString', PACKAGE = 'gaussianProcess', kernelName, a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_callKernelHessByString', PACKAGE = 'gaussianProcess', kernelName, a, b, hyperParams, additionalParams)
 }
 
 getKernelHyperparamNames <- function(kernelName, additionalParams) {
-    .Call('gaussianProcess_getKernelHyperparamNames', PACKAGE = 'gaussianProcess', kernelName, additionalParams)
+    .Call('_gaussianProcess_getKernelHyperparamNames', PACKAGE = 'gaussianProcess', kernelName, additionalParams)
 }
 
 squaredExponentialKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_squaredExponentialKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_squaredExponentialKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 squaredExponentialKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_squaredExponentialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_squaredExponentialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 squaredExponentialKernelHess <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_squaredExponentialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_squaredExponentialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 ARDKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_ARDKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_ARDKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 ARDKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_ARDKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_ARDKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 ARDKernelHess <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_ARDKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_ARDKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 inverseARDKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_inverseARDKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_inverseARDKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 inverseARDKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_inverseARDKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_inverseARDKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 inverseARDKernelHess <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_inverseARDKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_inverseARDKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 shiftedLog <- function(x) {
-    .Call('gaussianProcess_shiftedLog', PACKAGE = 'gaussianProcess', x)
+    .Call('_gaussianProcess_shiftedLog', PACKAGE = 'gaussianProcess', x)
 }
 
 stablePow <- function(x, a) {
-    .Call('gaussianProcess_stablePow', PACKAGE = 'gaussianProcess', x, a)
+    .Call('_gaussianProcess_stablePow', PACKAGE = 'gaussianProcess', x, a)
 }
 
 rationalQuadraticKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_rationalQuadraticKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_rationalQuadraticKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 rationalQuadraticKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_rationalQuadraticKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_rationalQuadraticKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 rationalQuadraticKernelHess <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_rationalQuadraticKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_rationalQuadraticKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 periodicKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_periodicKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_periodicKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 periodicKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_periodicKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_periodicKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 periodicKernelHess <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_periodicKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_periodicKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 constantKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_constantKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_constantKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 constantKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_constantKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_constantKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 constantKernelHess <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_constantKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_constantKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 generalisedPolynomialKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_generalisedPolynomialKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_generalisedPolynomialKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 generalisedPolynomialKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_generalisedPolynomialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_generalisedPolynomialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 generalisedPolynomialKernelHess <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_generalisedPolynomialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_generalisedPolynomialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 polynomialKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_polynomialKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_polynomialKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 polynomialKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_polynomialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_polynomialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 polynomialKernelHess <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_polynomialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_polynomialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 homogeneousPolynomialKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_homogeneousPolynomialKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_homogeneousPolynomialKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 homogeneousPolynomialKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_homogeneousPolynomialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_homogeneousPolynomialKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 homogeneousPolynomialKernelHess <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_homogeneousPolynomialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_homogeneousPolynomialKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 randomForestKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_randomForestKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_randomForestKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 randomForestKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_randomForestKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_randomForestKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 randomForestKernelHess <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_randomForestKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_randomForestKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 neuralNetworkKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_neuralNetworkKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_neuralNetworkKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 neuralNetworkKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_neuralNetworkKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_neuralNetworkKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 neuralNetworkKernelHess <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_neuralNetworkKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_neuralNetworkKernelHess', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 generalNeuralNetworkKernel <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_generalNeuralNetworkKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_generalNeuralNetworkKernel', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 generalNeuralNetworkKernelGrad <- function(a, b, hyperParams, additionalParams) {
-    .Call('gaussianProcess_generalNeuralNetworkKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
+    .Call('_gaussianProcess_generalNeuralNetworkKernelGrad', PACKAGE = 'gaussianProcess', a, b, hyperParams, additionalParams)
 }
 
 getTreeHeight <- function(tree) {
-    .Call('gaussianProcess_getTreeHeight', PACKAGE = 'gaussianProcess', tree)
+    .Call('_gaussianProcess_getTreeHeight', PACKAGE = 'gaussianProcess', tree)
 }
 
 navigateRFTree <- function(tree, data, isFactor, inputHeight) {
-    .Call('gaussianProcess_navigateRFTree', PACKAGE = 'gaussianProcess', tree, data, isFactor, inputHeight)
+    .Call('_gaussianProcess_navigateRFTree', PACKAGE = 'gaussianProcess', tree, data, isFactor, inputHeight)
 }
 
 kahanSum <- function(summands) {
-    .Call('gaussianProcess_kahanSum', PACKAGE = 'gaussianProcess', summands)
+    .Call('_gaussianProcess_kahanSum', PACKAGE = 'gaussianProcess', summands)
 }
 
 sumSQuaredDiffs <- function(a, b) {
-    .Call('gaussianProcess_sumSQuaredDiffs', PACKAGE = 'gaussianProcess', a, b)
+    .Call('_gaussianProcess_sumSQuaredDiffs', PACKAGE = 'gaussianProcess', a, b)
 }
 
 sumSQuaredDiffsPartial <- function(a, b, additionalParams) {
-    .Call('gaussianProcess_sumSQuaredDiffsPartial', PACKAGE = 'gaussianProcess', a, b, additionalParams)
+    .Call('_gaussianProcess_sumSQuaredDiffsPartial', PACKAGE = 'gaussianProcess', a, b, additionalParams)
 }
 
 bitWiseAnd <- function(a, b) {
-    .Call('gaussianProcess_bitWiseAnd', PACKAGE = 'gaussianProcess', a, b)
+    .Call('_gaussianProcess_bitWiseAnd', PACKAGE = 'gaussianProcess', a, b)
 }
 

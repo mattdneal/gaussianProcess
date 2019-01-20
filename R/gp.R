@@ -81,7 +81,11 @@ check.hyperparams <- function(gp, hyper.params) {
   }
   k.hp.names <- gp$kernel$hyperparam_names
   if (length(hyper.params) != length(k.hp.names)) {
-    stop("Number of hyperparameters supplied does not match kernel of GP")
+    print("hyper.params")
+    print(hyper.params)
+    print("k.hp.names")
+    print(k.hp.names)
+    stop(paste("Number of hyperparameters supplied does not match kernel of GP:", length(hyper.params), "vs", length(k.hp.names)))
   }
   if (!is.null(names(hyper.params))) {
     if (any(!names(hyper.params) %in% k.hp.names)) {
@@ -526,13 +530,17 @@ fit.hyperparams <- function(gp,
     for (col in 1:ncol(top.n.pars)) {
       # Find a suitable bandwidth and then use this to sample from the
       # distribution of the top n for this par.
-      tryCatch({
-        bw <- bw.SJ(top.n.pars[, col])
-      },
-      error=function(e) {
-        warning(e)
-        bw <- bw.nrd0(top.n.pars[, col])
-      })
+      if (sd(top.n.pars[, col]) != 0) {
+        tryCatch({
+          bw <- bw.SJ(top.n.pars[, col])
+        },
+        error=function(e) {
+          warning(e)
+          bw <- bw.nrd0(top.n.pars[, col])
+        })
+      } else {
+        bw <- 10^-8
+      }
       resampled.par.mat[, col] <- rnorm(num.resamples,
                                         sample(top.n.pars[, col],
                                                size = num.resamples,

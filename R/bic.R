@@ -243,7 +243,7 @@ model.search <- function(x,
   while (score.improved & new.nodes < max.new.nodes) {
     new.nodes <- new.nodes + 1
 
-    if (reset.params & best.score != Inf & any(!is.na(best.model$all.hyper.params))) {
+    if (reset.params & best.score != Inf) {
       reset.vec <- c(FALSE, TRUE)
     } else {
       reset.vec <- FALSE
@@ -282,13 +282,18 @@ model.search <- function(x,
         while (convcode > 0 & counter < 3) {
           # This didn't converge - try again a few times, then give up and ignore this model
           counter <- counter + 1
-          gp.obj <- create.gaussian.process(x, y, current.k, cache)
-          result <- fit.hyperparams(gp.obj, hyper.params.init=current.hyper.params, ...)
-          gp.obj <- result$gp
-          convcode <- result$optimx.obj["convcode"]
+          tryCatch({
+            gp.obj <- create.gaussian.process(x, y, current.k, cache)
+            result <- fit.hyperparams(gp.obj, hyper.params.init=current.hyper.params, ...)
+            gp.obj <- result$gp
+            convcode <- result$optimx.obj["convcode"]
+          }, error=function(e) {
+            print(e)
+            convcode <- 1
+          })
         }
 
-        if (result$optimx.obj["convcode"] == 0) {
+        if (convcode == 0) {
           model.score <- scoring.function(gp.obj, ...)
 
           model.name <- paste(as.character(gp.obj$kernel$kernel), as.character(reset), sep=".")
@@ -297,8 +302,8 @@ model.search <- function(x,
 
           scores[model.name, scoring.function.name] <- model.score.vec[model.name]
 
-          for (i in names(alternate.scoring.functions)) {
-            scores[model.name, i] <- alternate.scoring.functions[[i]](gp.obj, ...)
+          for (score_name_temp in names(alternate.scoring.functions)) {
+            scores[model.name, score_name_temp] <- alternate.scoring.functions[[score_name_temp]](gp.obj, ...)
           }
 
           if (return.all.models) {

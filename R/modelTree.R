@@ -351,7 +351,7 @@ insert.kernel.instance <- function(orig.model.tree,
   }
 
 
-  inst.id <- generate.id(model.tree$kernel.instances[1,], kernel.class.name)
+  inst.id <- generate.id(model.tree$kernel.instances[,1], kernel.class.name)
 
   # Add to the list of instances
   model.tree$kernel.instances[inst.id, ] <- c(kernelInstanceID=inst.id,
